@@ -1,7 +1,7 @@
 local wezterm = require("wezterm")
 local act = wezterm.action
 
-local colors = require("colors")
+local theme = require("theme")
 local inputmenu = require("inputmenu")
 local tabs = require("tabs")
 local rightStatus = require("statusline")
@@ -9,82 +9,91 @@ local splitNav = require("smartsplits")
 
 wezterm.on("format-tab-title", tabs)
 wezterm.on("update-right-status", rightStatus)
-
-local hyper = "CMD|SHIFT|CTRL|ALT"
+wezterm.on("window-config-reloaded", function(window)
+	local overrides = window:get_config_overrides() or {}
+	local scheme = theme.scheme_for_appearance()
+	if overrides.color_scheme ~= scheme then
+		overrides.color_scheme = scheme
+		overrides.colors = theme.custom_colors()
+		window:set_config_overrides(overrides)
+	end
+end)
 
 local config = {
-  term = "wezterm",
-  check_for_updates = false,
-  audible_bell = "Disabled",
-  send_composed_key_when_left_alt_is_pressed = true,
-  window_decorations = "RESIZE",
-  color_scheme_dirs = { "~/.config/wezterm/colors" },
-	color_scheme = "Everforest Dark (Medium)",
-  tab_bar_at_bottom = true,
-  use_fancy_tab_bar = false,
-  font = wezterm.font({
-    family = "JetBrainsMono Nerd Font",
-    weight = "Medium",
-    harfbuzz_features = { "calt=0", "clig=0", "liga=0", "cv06=1", "cv07=1", "cv17=1", "zero" },
-  }),
-  show_new_tab_button_in_tab_bar = false,
-  underline_position = -3,
-  underline_thickness = 2,
-  use_dead_keys = false,
-  font_size = 14,
-  tab_max_width = 200,
-  command_palette_bg_color = colors.bg_dim,
-  command_palette_fg_color = colors.fg,
-  inactive_pane_hsb = {
-    saturation = 0.8,
-    brightness = 0.75,
-  },
-  colors = {
-    tab_bar = {
-      background = colors.bg_dim,
-      active_tab = {
-        bg_color = colors.bg0,
-        fg_color = colors.fg,
-      },
-      inactive_tab = {
-        bg_color = colors.bg_dim,
-        fg_color = colors.grey2,
-      },
-    },
-  },
-  disable_default_key_bindings = true,
-  leader = { key = "Space", mods = hyper },
-  keys = {
-    { key = "t", mods = "CMD",  action = act.SpawnTab("CurrentPaneDomain") },
-    { key = "n", mods = "CMD",  action = act.SpawnWindow },
-    { key = "p", mods = hyper,  action = act.ActivateCommandPalette },
-    { key = "t", mods = hyper,  action = inputmenu },
-    { key = "s", mods = hyper,  action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
-    { key = "v", mods = hyper,  action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-    { key = "o", mods = hyper,  action = act.TogglePaneZoomState },
-    { key = "c", mods = hyper,  action = act.CloseCurrentPane({ confirm = true }) },
-    { key = "w", mods = "CMD",  action = act.CloseCurrentTab({ confirm = true }) },
-    { key = "v", mods = "CMD",  action = act.PasteFrom("Clipboard") },
-    { key = "c", mods = "CMD",  action = act.CopyTo("ClipboardAndPrimarySelection") },
-    { key = "f", mods = "CMD",  action = act.Search({ CaseSensitiveString = "" }) },
-    { key = "L", mods = "CTRL", action = act.ShowDebugOverlay },
-    splitNav('move', 'h'),
-    splitNav('move', 'j'),
-    splitNav('move', 'k'),
-    splitNav('move', 'l'),
-    splitNav('resize', 'h'),
-    splitNav('resize', 'j'),
-    splitNav('resize', 'k'),
-    splitNav('resize', 'l'),
-  },
+	adjust_window_size_when_changing_font_size = false,
+	audible_bell = "Disabled",
+	check_for_updates = false,
+	color_scheme = theme.scheme_for_appearance(),
+	colors = theme.custom_colors(),
+	font = wezterm.font_with_fallback({
+		{
+			family = "JetBrainsMono Nerd Font",
+			weight = "Medium",
+			harfbuzz_features = { "calt=0", "clig=0", "liga=0", "cv06=1", "cv07=1", "cv17=1", "zero" },
+		},
+		{
+			family = "SF Mono",
+			weight = "Medium",
+		},
+		{
+			family = "SF Pro",
+			weight = "Medium",
+		},
+	}),
+	font_size = 14,
+	-- line_height = 1.1,
+	inactive_pane_hsb = {
+		saturation = 1,
+		brightness = 0.85,
+	},
+	send_composed_key_when_left_alt_is_pressed = true,
+	show_new_tab_button_in_tab_bar = false,
+	tab_bar_at_bottom = true,
+	tab_max_width = 9999,
+	term = "wezterm",
+	underline_position = -3,
+	underline_thickness = "1pt",
+	use_dead_keys = false,
+	use_fancy_tab_bar = false,
+	window_decorations = "RESIZE",
+	keys = {
+		{ key = "p", mods = "SHIFT|CMD", action = act.ActivateCommandPalette },
+		{ key = "w", mods = "SHIFT|CMD", action = inputmenu },
+		{ key = "s", mods = "SHIFT|CMD", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+		{ key = "v", mods = "SHIFT|CMD", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+		{ key = "o", mods = "SHIFT|CMD", action = act.TogglePaneZoomState },
+		{ key = "c", mods = "SHIFT|CMD", action = act.CloseCurrentPane({ confirm = true }) },
+		{ key = "d", mods = "SHIFT|CMD", action = act.ShowDebugOverlay },
+		{ key = "p", mods = "SHIFT|CMD", action = act.SwitchWorkspaceRelative(1) },
+		{ key = "n", mods = "SHIFT|CMD", action = act.SwitchWorkspaceRelative(-1) },
+		{ key = "l", mods = "SHIFT|ALT", action = act.MoveTabRelative(1) },
+		{ key = "h", mods = "SHIFT|ALT", action = act.MoveTabRelative(-1) },
+		{ key = "k", mods = "CTRL", action = act.SendKey({ key = "UpArrow" }) },
+		{ key = "j", mods = "CTRL", action = act.SendKey({ key = "DownArrow" }) },
+		{ key = "t", mods = "CMD", action = act.SpawnTab("CurrentPaneDomain") },
+		{ key = "n", mods = "CMD", action = act.SpawnWindow },
+		{ key = "v", mods = "CMD", action = act.PasteFrom("Clipboard") },
+		{ key = "c", mods = "CMD", action = act.CopyTo("ClipboardAndPrimarySelection") },
+		{ key = "f", mods = "CMD", action = act.Search({ CaseSensitiveString = "" }) },
+		{ key = "h", mods = "OPT", action = act.SendKey({ key = "b", mods = "ALT" }) },
+		{ key = "l", mods = "OPT", action = act.SendKey({ key = "f", mods = "ALT" }) },
+		splitNav("move", "h"),
+		splitNav("move", "j"),
+		splitNav("move", "k"),
+		splitNav("move", "l"),
+		splitNav("resize", "h"),
+		splitNav("resize", "j"),
+		splitNav("resize", "k"),
+		splitNav("resize", "l"),
+	},
 }
 
 for i = 1, 8 do
-  table.insert(config.keys, {
-    key = tostring(i),
-    mods = "CMD",
-    action = act.ActivateTab(i - 1),
-  })
+	table.insert(config.keys, {
+		key = tostring(i),
+		mods = "CMD",
+		action = act.ActivateTab(i - 1),
+	})
 end
 
 return config
