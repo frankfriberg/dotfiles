@@ -3,45 +3,55 @@
 yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
 sudo yabai --load-sa
 
-yabai -m rule --add app="^Installer$" manage=off
-yabai -m rule --add app="^Disk Utility$" manage=off
-yabai -m rule --add app="^Calculator$" manage=off
-yabai -m rule --add app="^Calendar$" manage=off
-yabai -m rule --add app="^System Settings$" manage=off
-yabai -m rule --add app="^System Preferences$" manage=off
-yabai -m rule --add app="^Keychain Access$" manage=off
-yabai -m rule --add app="^Finder$" manage=off
-yabai -m rule --add app="^Font Book$" manage=off
-yabai -m rule --add app="^Activity Monitor$" manage=off
-yabai -m rule --add app="^Telegram$" manage=off
-yabai -m rule --add app="^Archive Utility$" manage=off
-yabai -m rule --add app="^Spark$" manage=off
-yabai -m rule --add app="^Mail$" manage=off
-yabai -m rule --add app="^Harvest$" manage=off
+yabai -m rule --add app="^Digital Colou?r Meter$" sticky=on
+yabai -m rule --add app="^Installer$" manage=off sub-layer=below
+yabai -m rule --add app="^Disk Utility$" manage=off sub-layer=below
+yabai -m rule --add app="^Calculator$" manage=off sub-layer=below
+yabai -m rule --add app="^Calendar$" manage=off sub-layer=below
+yabai -m rule --add app="^System Settings$" manage=off sub-layer=below
+yabai -m rule --add app="^System Preferences$" manage=off sub-layer=below
+yabai -m rule --add app="^Keychain Access$" manage=off sub-layer=below
+yabai -m rule --add app="^Finder$" manage=off sub-layer=below
+yabai -m rule --add app="^Font Book$" manage=off sub-layer=below
+yabai -m rule --add app="^Activity Monitor$" manage=off sub-layer=below
+yabai -m rule --add app="^Archive Utility$" manage=off sub-layer=below
+yabai -m rule --add app="^Mail$" manage=off sub-layer=below
+yabai -m rule --add app="^Session$" manage=off sub-layer=below
+yabai -m rule --add app="^1Password$" manage=off sub-layer=below
+yabai -m rule --add app="^OpenVPN Connect$" manage=off sub-layer=below
 
 # bsp or float (default: float)
 yabai -m config layout bsp
 
+PADDINGS=10
+
 # Set all padding and gaps to 20pt (default: 0)
-yabai -m config top_padding    10
-yabai -m config bottom_padding 10
-yabai -m config left_padding   10
-yabai -m config right_padding  10
-yabai -m config window_gap     10
+yabai -m config top_padding    $PADDINGS
+yabai -m config bottom_padding $PADDINGS
+yabai -m config left_padding   $PADDINGS
+yabai -m config right_padding  $PADDINGS
+yabai -m config window_gap     $PADDINGS
+yabai -m config external_bar   main:40:0
 
 # # set focus follows mouse mode (default: off, options: off, autoraise, autofocus)
 # yabai -m config focus_follows_mouse autofocus
 
 # modify window shadows (default: on, options: on, off, float)
 # example: show shadows only for floating windows
-yabai -m config window_shadow float
+# yabai -m config window_shadow float
 
 # add 20 padding to the top and 0 padding to the bottom of every space located on the main display
 # yabai -m config external_bar main:30:0
+#
 
-# Border settings
-yabai -m config window_border on
-yabai -m config window_border_blur off
-yabai -m config window_border_width 1
-yabai -m config active_window_border_color 0xFFd3c6aa
-yabai -m config normal_window_border_color 0xcc333333
+# Scratchpad
+yabai -m rule --add app="^Slack$" scratchpad=slack grid=11:11:1:1:9:9 sub-layer=above
+yabai -m rule --add app="^Telegram$" scratchpad=telegram grid=11:11:1:1:9:9
+yabai -m rule --add app="^Docker Desktop$" scratchpad=docker grid=11:11:1:1:9:9
+
+# set unactive window opacity
+yabai -m config window_opacity on
+yabai -m config normal_window_opacity 0.95
+yabai -m config window_opacity_duration 0.1
+
+#borders active_color=0xffe1e3e4 inactive_color=0xff494d64 width=1.0 &
