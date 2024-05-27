@@ -35,4 +35,4 @@ rcmd - r : yabai --restart-service
 # scratchpads
 hyper - 1 : yabai -m window --toggle slack || open -a Slack
 hyper - 2 : yabai -m window --toggle telegram || open  -a Telegram
-hyper - 3 : yabai -m window --toggle docker || open -a Docker
+hyper - 3 : yabai -m window --toggle docker || open -a "Docker Desktop"

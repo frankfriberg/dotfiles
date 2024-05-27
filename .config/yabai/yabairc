@@ -45,7 +45,7 @@ yabai -m config external_bar   main:40:0
 #
 
 # Scratchpad
-yabai -m rule --add app="^Slack$" scratchpad=slack grid=11:11:1:1:9:9 sub-layer=above
+yabai -m rule --add app="^Slack$" scratchpad=slack grid=11:11:1:1:9:9
 yabai -m rule --add app="^Telegram$" scratchpad=telegram grid=11:11:1:1:9:9
 yabai -m rule --add app="^Docker Desktop$" scratchpad=docker grid=11:11:1:1:9:9
 
