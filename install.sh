@@ -8,6 +8,8 @@ mkdir ~/Development
 echo "Installing brew cask..."
 brew tap homebrew/cask
 
+brew install yadm
+
 brew install --cask slack
 brew install --cask arc
 brew install --cask wezterm
@@ -47,3 +49,5 @@ git config --global rebase.updateRefs true
 git config --global rebase.autstash true
 git config --global rebase.autosquash true
 git config --global status.showUntrackedFiles all
+
+yadm clone https://github.com/frankfriberg/dotfiles.git
