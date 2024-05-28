@@ -1,0 +1,9 @@
+{
+  "diagnostic.globals": [
+    "Sbar"
+  ],
+    "diagnostics.globals": [
+        "vim",
+        "require"
+    ]
+}
