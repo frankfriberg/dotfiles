@@ -29,6 +29,7 @@ casks=(
   nikitabobko/tap/aerospace
   notion
   openvpn-connect
+  linear-linear
   raycast
   sf-symbols
   slack
