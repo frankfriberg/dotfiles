@@ -27,5 +27,6 @@ install_packages
 setup_osx
 setup_git
 
-bob use latest
+stow .
+
 nvim --headless "+Lazy! install" +qall
