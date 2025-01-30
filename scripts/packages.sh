@@ -8,6 +8,7 @@ packages=(
   gh
   ical-buddy
   jq
+  lua
   neovim
   nowplaying-cli
   nvm
