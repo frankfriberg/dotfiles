@@ -27,6 +27,12 @@ install_packages
 setup_osx
 setup_git
 
+# Set Wezterm as terminal
+tempfile=$(mktemp) \
+  && curl -o $tempfile https://raw.githubusercontent.com/wez/wezterm/main/termwiz/data/wezterm.terminfo \
+  && tic -x -o ~/.terminfo $tempfile \
+  && rm $tempfile
+
 stow .
 
 nvim --headless "+Lazy! install" +qall
