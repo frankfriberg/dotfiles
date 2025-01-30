@@ -1,0 +1,72 @@
+exec-on-workspace-change = [
+    '/bin/bash',
+    '-c',
+    'sketchybar --trigger workspace_change FOCUSED=$AEROSPACE_FOCUSED_WORKSPACE PREVIOUS=$AEROSPACE_PREV_WORKSPACE',
+]
+start-at-login = true
+accordion-padding = 0
+
+[gaps]
+inner.horizontal = 8
+inner.vertical = 8
+outer.left = 8
+outer.bottom = 8
+outer.top = [{ monitor."built-in" = 8 }, 48]
+outer.right = 8
+
+[[on-window-detected]]
+if.app-id = "com.1password.1password"
+run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "com.apple.Passwords"
+run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "com.apple.mail"
+run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "com.electron.dockerdesktop"
+run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "ru.keepcoder.Telegram"
+run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "com.apple.iCal"
+run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "com.tinyspeck.slackmacgap"
+run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "org.pqrs.Karabiner-Elements"
+run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "com.apple.finder"
+run = "layout floating"
+
+## Workspace assignment
+[[on-window-detected]]
+if.app-id = "com.spotify.client"
+run = "move-node-to-workspace 4"
+
+[[on-window-detected]]
+if.app-id = "com.spotify.client"
+run = "move-node-to-workspace 4"
+
+[[on-window-detected]]
+if.app-id = "com.tinyapp.TablePlus"
+run = "move-node-to-workspace 2"
+
+[[on-window-detected]]
+if.app-id = "com.linear"
+run = "move-node-to-workspace 3"
+
+[[on-window-detected]]
+if.window-title-regex-substring = "Jira"
+run = "move-node-to-workspace 3"
