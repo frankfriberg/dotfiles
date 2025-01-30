@@ -3,12 +3,12 @@ taps=(
 )
 
 packages=(
-  bob
   fd
   fzf
   gh
   ical-buddy
   jq
+  neovim
   nowplaying-cli
   nvm
   prettierd
