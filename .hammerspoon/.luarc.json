@@ -1,0 +1,7 @@
+{
+  "diagnostics.globals": ["vim", "hs", "appWatcher"],
+  "workspace": {
+    "library": ["/Users/ff/.hammerspoon/Spoons/EmmyLua.spoon/annotations"]
+  }
+}
+

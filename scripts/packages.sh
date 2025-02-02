@@ -6,6 +6,7 @@ packages=(
   fd
   fzf
   gh
+  hammerspoon
   ical-buddy
   jq
   lua
@@ -27,7 +28,6 @@ casks=(
   figma
   font-jetbrains-mono-nerd-font
   karabiner-elements
-  nikitabobko/tap/aerospace
   notion
   openvpn-connect
   linear-linear
