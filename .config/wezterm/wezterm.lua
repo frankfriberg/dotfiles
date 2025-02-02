@@ -3,6 +3,7 @@ local act = wezterm.action
 
 local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/smart_workspace_switcher.wezterm")
 local resurrect = wezterm.plugin.require("https://github.com/MLFlexer/resurrect.wezterm")
+workspace_switcher.zoxide_path = "/opt/homebrew/bin/zoxide"
 resurrect.periodic_save({
 	interval_seconds = 60,
 })
