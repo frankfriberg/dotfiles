@@ -9,7 +9,6 @@ packages=(
   ical-buddy
   jq
   neovim
-  nowplaying-cli
   nvm
   prettierd
   sketchybar
