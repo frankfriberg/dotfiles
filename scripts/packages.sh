@@ -14,6 +14,7 @@ packages=(
   nowplaying-cli
   nvm
   prettierd
+  rg
   sketchybar
   starship
   zoxide
