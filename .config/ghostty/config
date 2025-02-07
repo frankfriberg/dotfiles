@@ -1,0 +1,14 @@
+theme = dark:rose-pine-moon,light:rose-pine-dawn
+
+window-padding-x = 10
+window-padding-y = 5, 5
+macos-titlebar-style = hidden
+
+adjust-cursor-thickness = 50%
+
+font-family = "JetBrains Mono NL"
+font-style = "Medium"
+font-feature = -calt, -liga, -dlig
+font-size = 14
+
+window-save-state=always
