@@ -3,6 +3,13 @@ local colors = require("colors")
 
 local wifi = sbar.add("item", "widgets.wifi.item", {
 	position = "right",
+	icon = {
+		padding_left = 5,
+		padding_right = 6,
+	},
+	label = {
+		padding_right = 6,
+	},
 })
 
 wifi:subscribe({ "wifi_change", "system_woke", "theme_changed" }, function()
@@ -10,6 +17,8 @@ wifi:subscribe({ "wifi_change", "system_woke", "theme_changed" }, function()
 		local ssid = data:match("[^B]SSID%s*:%s*([^\n]+)")
 		local connected = ssid ~= nil
 		local color
+		local palette = colors.currentPalette
+		local fg = palette.bg
 		local icon
 
 		local router_ip = data:match("router %(ip_mult%): {([^}]+)}")
@@ -17,24 +26,26 @@ wifi:subscribe({ "wifi_change", "system_woke", "theme_changed" }, function()
 
 		if not connected then
 			icon = icons.wifi.disconnected
-			color = colors.currentPalette.red
+			color = palette.red
 		elseif is_hotspot then
 			icon = icons.wifi.hotspot
-			color = colors.currentPalette.yellow
+			color = colors.currentPalette.green
 		else
 			icon = icons.wifi.connected
-			color = colors.currentPalette.cyan
+			color = colors.currentPalette.blue
 		end
 
 		wifi:set({
 			icon = {
+				color = fg,
 				string = icon,
-				color = color,
-				padding_right = 5,
 			},
 			label = {
-				drawing = connected,
-				string = connected and ssid or "",
+				color = fg,
+				string = connected and ssid or "Disconnected",
+			},
+			background = {
+				color = color,
 			},
 		})
 	end)

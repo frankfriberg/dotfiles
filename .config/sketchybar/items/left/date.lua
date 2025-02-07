@@ -4,14 +4,13 @@ local cal = sbar.add("item", "widgets.date.item", {
 	icon = {
 		string = "􀉉",
 		padding_right = 5,
+		padding_left = 5,
 	},
 	label = {
 		padding_right = 5,
 	},
 	position = "left",
 	update_freq = 5,
-	padding_right = 8,
-	padding_left = 8,
 })
 
 local function format_events(input)
@@ -84,10 +83,14 @@ cal:subscribe({ "forced", "routine", "system_woke" }, function()
 
 			sbar.animate("tanh", 10, function()
 				cal:set({
-					icon = date,
+					background = {
+						color = ((is_now and palette.blue) or (is_soon and palette.peach)),
+					},
+					icon = {
+						string = date,
+					},
 					label = {
 						string = event_label,
-						color = ((is_now and palette.cyan) or (is_soon and palette.peach)) or palette.fg,
 					},
 				})
 			end)

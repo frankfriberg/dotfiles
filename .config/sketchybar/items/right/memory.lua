@@ -15,12 +15,6 @@ local memory = sbar.add("item", "widgets.memory.item", {
 		padding_right = 4,
 	},
 	update_freq = 2,
-	background = {
-		height = 20,
-		corner_radius = 5,
-	},
-	padding_right = 2,
-	padding_left = 2,
 })
 
 memory:subscribe({ "routine", "system_woke", "theme_changed" }, function()
@@ -29,7 +23,7 @@ memory:subscribe({ "routine", "system_woke", "theme_changed" }, function()
 		function(free_memory)
 			local palette = colors.currentPalette
 			local fg = palette.fg
-			local bg = palette.bg
+			local bg = palette.transparent
 			local usage = 100 - tonumber(free_memory)
 
 			if usage > 60 then

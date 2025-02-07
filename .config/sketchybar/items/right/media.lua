@@ -1,16 +1,10 @@
-local default_bracket = require("default").default_bracket
-local app_icons = require("helpers.app_icons")
-
-local whitelist = {
-	["Spotify"] = true,
-	["Music"] = true,
-}
-
 local player_icon = sbar.add("item", "widgets.media.icon", {
 	position = "right",
 	icon = {
-		font = "sketchybar-app-font:Regular:18.0",
-		string = app_icons["Spotify"],
+		string = "􀊘 ",
+		font = {
+			size = 16,
+		},
 	},
 	label = {
 		drawing = false,
@@ -49,25 +43,14 @@ local media_title = sbar.add("item", "widgets.media.title.item", {
 	},
 })
 
-local media_bracket = sbar.add("bracket", "container.widgets.media", {
-	player_icon.name,
-	media_artist.name,
-	media_title.name,
-}, default_bracket)
+media_title:subscribe("media_change", function(env)
+	local playing = env.INFO.state == "playing"
+	media_artist:set({ label = env.INFO.artist })
+	media_title:set({ label = env.INFO.title })
+	player_icon:set({ icon = playing and "􀊖" or "􀊘" })
 
-player_icon:subscribe("theme_changed", function(palette)
-	player_icon:set({ icon = { color = palette.green } })
-end)
-
-media_bracket:subscribe("media_change", function(env)
-	if whitelist[env.INFO.app] then
-		media_artist:set({ label = env.INFO.artist })
-		media_title:set({ label = env.INFO.title })
-		player_icon:set({ icon = { string = app_icons[env.INFO.app] } })
-
-		sbar.animate("tanh", 30, function()
-			media_artist:set({ label = { width = "dynamic" } })
-			media_title:set({ label = { width = "dynamic" } })
-		end)
-	end
+	sbar.animate("tanh", 30, function()
+		media_artist:set({ label = { width = "dynamic" } })
+		media_title:set({ label = { width = "dynamic" } })
+	end)
 end)

@@ -35,9 +35,9 @@ local rosePineDawn = {
 local setColorPalette = function(palette)
 	return {
 		bg = palette.base,
-		fg = palette.text,
+		fg = 0xFFFFFFFF,
 		faded = palette.subtle,
-		border = palette.overlay,
+		border = 0x00000000,
 		red = palette.love,
 		blue = palette.pine,
 		cyan = palette.foam,
@@ -66,12 +66,6 @@ M.refreshColors = function()
 			local palette = M.getColorPalette(isDarkMode)
 
 			sbar.animate("tanh", 10, function()
-				sbar.set("/container.*/", {
-					background = {
-						color = palette.bg,
-						border_color = palette.border,
-					},
-				})
 				sbar.set("/.*item/", {
 					label = {
 						color = palette.fg,

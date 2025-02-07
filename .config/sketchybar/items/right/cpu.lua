@@ -15,19 +15,13 @@ local cpu = sbar.add("item", "widgets.cpu.item", {
 		padding_right = 4,
 	},
 	update_freq = 2,
-	background = {
-		height = 20,
-		corner_radius = 5,
-	},
-	padding_right = 2,
-	padding_left = 2,
 })
 
 cpu:subscribe({ "routine", "system_woke", "theme_changed" }, function()
 	sbar.exec("top -l 1 | grep 'CPU usage' | awk '{printf \"%d\", $3 + $5}'", function(result)
 		local palette = colors.currentPalette
 		local fg = palette.fg
-		local bg = palette.bg
+		local bg = palette.transparent
 		local usage = tonumber(result)
 
 		if usage > 40 then

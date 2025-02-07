@@ -1,7 +1,6 @@
 local time = sbar.add("item", "widgets.time.item", {
 	icon = {
 		padding_right = 5,
-		padding_left = 3,
 		font = {
 			size = 16,
 		},
@@ -9,7 +8,6 @@ local time = sbar.add("item", "widgets.time.item", {
 	position = "left",
 	update_freq = 30,
 	padding_right = 8,
-	padding_left = 8,
 })
 
 time:subscribe({ "forced", "routine", "system_woke" }, function()

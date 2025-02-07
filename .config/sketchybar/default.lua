@@ -4,12 +4,6 @@ local default_settings = {
 	paddings = 3,
 	icons = "sf-symbols",
 	font = require("helpers.default_font"),
-	default_bracket = {
-		background = {
-			border_width = 1,
-			border_color = 0x22ffffff,
-		},
-	},
 }
 
 local defaults = {
@@ -30,8 +24,8 @@ local defaults = {
 	},
 	background = {
 		color = 0x00000000,
-		height = 30,
-		corner_radius = 10,
+		height = 22,
+		corner_radius = 5,
 	},
 	scroll_texts = true,
 	padding_right = default_settings.paddings,
