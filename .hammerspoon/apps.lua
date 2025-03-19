@@ -8,11 +8,17 @@ local apps = {
 	f = "Finder",
 	m = "Mail",
 	p = "1Password",
+	h = "Spotify",
 }
 
 for key, app in pairs(apps) do
-	map.hyper(key, function()
-		hs.application.open(app)
+	map.meh(key, function()
+		local runningApp = hs.application(app)
+		if runningApp and runningApp:isFrontmost() then
+			runningApp:hide()
+		else
+			hs.application.open(app)
+		end
 	end)
 end
 
