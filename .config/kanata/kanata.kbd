@@ -1,0 +1,114 @@
+(defcfg
+  process-unmapped-keys yes
+  concurrent-tap-hold yes
+)
+
+;; Danish ISO105
+(deflocalkeys-macos
+  +   12
+  ´   13 ;; Acute accent. Opposite to the grave accent (grv).
+  å   26
+  ¨   27
+  ø   40
+  æ   39
+  '   43
+  <   86
+  ,   51
+  .   52
+  -   53
+)
+
+(defsrc
+  esc  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
+  grv  1    2    3    4    5    6    7    8    9    0    +    ´    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    å    ¨
+  caps a    s    d    f    g    h    j    k    l    æ    ø    '    ret
+  lsft <    z    x    c    v    b    n    m    ,    .    -    up    rsft
+  fn   lctl lalt lmet          spc        rmet ralt left    down    right
+)
+
+(defvar
+  tap-time 200
+  hold-time 400
+  fast-typing-time 200
+  left-hand-keys (
+    grv 1 2 3 4 5 
+    q w e r t
+    a s d f g
+    < z x c v b
+  )
+  right-hand-keys (
+    6 7 8 9 0 + ´
+    y u i o p å ¨
+    h j k l æ ø '
+    n m , . -
+  )
+)
+
+(deftemplate thrk-l (base-key action)
+  (switch
+    ((key-timing 3 less-than $fast-typing-time)) $base-key break
+    () (tap-hold-release-keys $tap-time $hold-time $base-key $action $left-hand-keys) break
+  )
+)
+
+(deftemplate thrk-r (base-key action)
+  (switch
+    ((key-timing 3 less-than $fast-typing-time)) $base-key break
+    () (tap-hold-release-keys $tap-time $hold-time $base-key $action $right-hand-keys) break
+  )
+)
+
+(deftemplate charmod (char mod)
+  (switch 
+    ((key-timing 3 less-than 250)) $char break
+    () (tap-hold-release-timeout 200 500 $char $mod $char) break
+  )
+)
+
+(defalias
+  hyper (multi lctl lalt lmet lsft)
+  meh (multi alt ctl sft)
+  tab (tap-hold 100 200 tab @hyper)
+  a (t! thrk-l a lmet)
+  s (t! thrk-l s lsft)
+  d (t! thrk-l d lctl)
+  f (t! thrk-l f lalt)
+  j (t! thrk-r j lalt)
+  k (t! thrk-r k rctl)
+  l (t! thrk-r l rsft)
+  ae (t! thrk-r æ lmet)
+  dollar (unicode "$")
+  arrow (unicode "^")
+  escnav (tap-hold 100 200 esc (layer-while-held navigation))
+  nav (layer-while-held navigation)
+  spcsym (tap-hold 100 200 spc (layer-while-held symbol))
+  retsym (tap-hold 100 200 ret (layer-while-held symbol))
+)
+
+(deflayer main
+  esc     brdn  brup  _     _     _     _     prev  pp    next  mute  vold  volu
+  lsgt    1     2     3     4     5     6     7     8     9     0     +     ´     bspc
+  @tab    q     w     e     r     t     y     u     i     o     p     å     ¨
+  @escnav @a    @s    @d    @f    g     h     @j    @k    @l    @ae   ø     '     @retsym
+  lsft    <     z     x     c     v     b     n     m     ,     .     -     up    rsft
+  fn      lctl  lalt  lmet             @spcsym            @nav  @meh  left  down  right
+)
+
+(deflayer navigation
+  esc     brdn  brup  _     _     _     _     prev  pp    next  mute  vold  volu
+  @dollar 1     2     3     4     5     6     7     8     9     0     +     ´     bspc
+  @tab    q     w     e     r     t     y     u     i     o     p     å     ¨
+  @escnav a     s     d     f     g     left  down  up    right æ     ø     '     ret
+  lsft    <     z     x     c     v     b     n     m     ,     .     -     up    rsft
+  fn      lctl  lalt  lmet                spc             ralt  @meh  left  down  right
+)
+
+(deflayer symbol
+  esc     brdn  brup  _     _     _     prev  pp    next  mute  vold  volu  _
+  @arrow  1     A-'   3     4     5     prev  pp    next  mute  vold  _     ´     volu
+  lrld    S-1   S-2   S-3   S-4   S-5   S-6   S-7   S-8   S-9   S-0   S-+   S-´ 
+  lctl    +     S-0   S-'   '     A-'   A-¨   A-S-8 A-S-9 A-8   A-9   S-´   S-'   ret
+  lsft    <     z     x     c     v     b     grv   S-grv ,     .     -     up    rsft
+  fn      lctl  lalt  lmet                spc             rmet  ralt  left  down  right
+)

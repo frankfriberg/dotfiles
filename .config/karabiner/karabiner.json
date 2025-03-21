@@ -7,70 +7,7 @@
       "complex_modifications": {
         "rules": [
           {
-            "description": "Left FN to CTRL",
-            "manipulators": [
-              {
-                "type": "basic",
-                "from": {
-                  "key_code": "fn"
-                },
-                "to": [
-                  {
-                    "key_code": "left_control"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "description": "Map CMD Caps Lock to Hyper",
-            "manipulators": [
-              {
-                "type": "basic",
-                "from": {
-                  "key_code": "caps_lock",
-                  "modifiers": {
-                    "mandatory": [
-                      "left_command"
-                    ]
-                  }
-                },
-                "to": [
-                  {
-                    "key_code": "left_command",
-                    "modifiers": [
-                      "option",
-                      "control",
-                      "shift"
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "description": "Right Command to Hyper",
-            "manipulators": [
-              {
-                "type": "basic",
-                "from": {
-                  "key_code": "right_command"
-                },
-                "to": [
-                  {
-                    "key_code": "left_command",
-                    "modifiers": [
-                      "option",
-                      "control",
-                      "shift"
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "description": "Caps Lock Meh",
+            "description": "Caps Lock Ctrl Or Esc",
             "manipulators": [
               {
                 "type": "basic",
@@ -79,25 +16,75 @@
                 },
                 "to": [
                   {
-                    "key_code": "left_option",
+                    "key_code": "left_command",
                     "modifiers": [
+                      "option",
                       "control",
                       "shift"
                     ]
+                  }
+                ],
+                "to_if_alone": [
+                  {
+                    "key_code": "escape"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "description": "DuoLayer f d",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "simultaneous": [
+                    {
+                      "key_code": "f"
+                    },
+                    {
+                      "key_code": "d"
+                    }
+                  ],
+                  "simultaneous_options": {
+                    "to_after_key_up": [
+                      {
+                        "set_variable": {
+                          "name": "duo-layer-f-d",
+                          "value": 0
+                        }
+                      }
+                    ]
+                  },
+                  "modifiers": {
+                    "optional": [
+                      "any"
+                    ]
+                  }
+                },
+                "parameters": {
+                  "basic.simultaneous_threshold_milliseconds": 200
+                },
+                "to": [
+                  {
+                    "set_variable": {
+                      "name": "duo-layer-f-d",
+                      "value": 1
+                    }
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_unless",
+                    "name": "duo-layer-f-d",
+                    "value": 1
                   }
                 ]
               },
               {
                 "type": "basic",
                 "from": {
-                  "key_code": "h",
-                  "modifiers": {
-                    "mandatory": [
-                      "option",
-                      "control",
-                      "shift"
-                    ]
-                  }
+                  "key_code": "h"
                 },
                 "to": [
                   {
@@ -106,19 +93,19 @@
                       "left_option"
                     ]
                   }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-d",
+                    "value": 1
+                  }
                 ]
               },
               {
                 "type": "basic",
                 "from": {
-                  "key_code": "l",
-                  "modifiers": {
-                    "mandatory": [
-                      "option",
-                      "control",
-                      "shift"
-                    ]
-                  }
+                  "key_code": "l"
                 },
                 "to": [
                   {
@@ -126,6 +113,55 @@
                     "modifiers": [
                       "left_option"
                     ]
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-d",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "j"
+                },
+                "to": [
+                  {
+                    "key_code": "8",
+                    "modifiers": [
+                      "left_shift"
+                    ]
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-d",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "k"
+                },
+                "to": [
+                  {
+                    "key_code": "9",
+                    "modifiers": [
+                      "left_shift"
+                    ]
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-d",
+                    "value": 1
                   }
                 ]
               },
@@ -135,9 +171,7 @@
                   "key_code": "j",
                   "modifiers": {
                     "mandatory": [
-                      "option",
-                      "control",
-                      "shift"
+                      "left_shift"
                     ]
                   }
                 },
@@ -147,6 +181,13 @@
                     "modifiers": [
                       "left_shift"
                     ]
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-d",
+                    "value": 1
                   }
                 ]
               },
@@ -156,9 +197,7 @@
                   "key_code": "k",
                   "modifiers": {
                     "mandatory": [
-                      "option",
-                      "control",
-                      "shift"
+                      "left_shift"
                     ]
                   }
                 },
@@ -169,63 +208,19 @@
                       "left_shift"
                     ]
                   }
-                ]
-              },
-              {
-                "type": "basic",
-                "from": {
-                  "key_code": "j",
-                  "modifiers": {
-                    "mandatory": [
-                      "left_shift",
-                      "option",
-                      "control",
-                      "shift"
-                    ]
-                  }
-                },
-                "to": [
+                ],
+                "conditions": [
                   {
-                    "key_code": "8",
-                    "modifiers": [
-                      "left_shift"
-                    ]
+                    "type": "variable_if",
+                    "name": "duo-layer-f-d",
+                    "value": 1
                   }
                 ]
               },
               {
                 "type": "basic",
                 "from": {
-                  "key_code": "k",
-                  "modifiers": {
-                    "mandatory": [
-                      "left_shift",
-                      "option",
-                      "control",
-                      "shift"
-                    ]
-                  }
-                },
-                "to": [
-                  {
-                    "key_code": "9",
-                    "modifiers": [
-                      "left_shift"
-                    ]
-                  }
-                ]
-              },
-              {
-                "type": "basic",
-                "from": {
-                  "key_code": "u",
-                  "modifiers": {
-                    "mandatory": [
-                      "option",
-                      "control",
-                      "shift"
-                    ]
-                  }
+                  "key_code": "u"
                 },
                 "to": [
                   {
@@ -235,19 +230,19 @@
                       "left_option"
                     ]
                   }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-d",
+                    "value": 1
+                  }
                 ]
               },
               {
                 "type": "basic",
                 "from": {
-                  "key_code": "i",
-                  "modifiers": {
-                    "mandatory": [
-                      "option",
-                      "control",
-                      "shift"
-                    ]
-                  }
+                  "key_code": "i"
                 },
                 "to": [
                   {
@@ -257,37 +252,37 @@
                       "left_option"
                     ]
                   }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-d",
+                    "value": 1
+                  }
                 ]
               },
               {
                 "type": "basic",
                 "from": {
-                  "key_code": "o",
-                  "modifiers": {
-                    "mandatory": [
-                      "option",
-                      "control",
-                      "shift"
-                    ]
-                  }
+                  "key_code": "o"
                 },
                 "to": [
                   {
                     "key_code": "grave_accent_and_tilde"
                   }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-d",
+                    "value": 1
+                  }
                 ]
               },
               {
                 "type": "basic",
                 "from": {
-                  "key_code": "p",
-                  "modifiers": {
-                    "mandatory": [
-                      "option",
-                      "control",
-                      "shift"
-                    ]
-                  }
+                  "key_code": "p"
                 },
                 "to": [
                   {
@@ -296,16 +291,408 @@
                       "left_shift"
                     ]
                   }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-d",
+                    "value": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "description": "DuoLayer f s",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "simultaneous": [
+                    {
+                      "key_code": "f"
+                    },
+                    {
+                      "key_code": "s"
+                    }
+                  ],
+                  "simultaneous_options": {
+                    "to_after_key_up": [
+                      {
+                        "set_variable": {
+                          "name": "duo-layer-f-s",
+                          "value": 0
+                        }
+                      }
+                    ]
+                  },
+                  "modifiers": {
+                    "optional": [
+                      "any"
+                    ]
+                  }
+                },
+                "parameters": {
+                  "basic.simultaneous_threshold_milliseconds": 200
+                },
+                "to": [
+                  {
+                    "set_variable": {
+                      "name": "duo-layer-f-s",
+                      "value": 1
+                    }
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_unless",
+                    "name": "duo-layer-f-s",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "j"
+                },
+                "to": [
+                  {
+                    "key_code": "down_arrow"
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-s",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "k"
+                },
+                "to": [
+                  {
+                    "key_code": "up_arrow"
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-s",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "h"
+                },
+                "to": [
+                  {
+                    "key_code": "left_arrow"
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-s",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "l"
+                },
+                "to": [
+                  {
+                    "key_code": "right_arrow"
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "variable_if",
+                    "name": "duo-layer-f-s",
+                    "value": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "description": "Home Row Mod",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "a"
+                },
+                "to_if_alone": [
+                  {
+                    "halt": true,
+                    "key_code": "a",
+                    "modifiers": []
+                  }
+                ],
+                "to_if_held_down": [
+                  {
+                    "key_code": "left_control"
+                  }
+                ],
+                "to_delayed_action": {
+                  "to_if_invoked": [],
+                  "to_if_canceled": [
+                    {
+                      "key_code": "a"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "s"
+                },
+                "to_if_alone": [
+                  {
+                    "halt": true,
+                    "key_code": "s",
+                    "modifiers": []
+                  }
+                ],
+                "to_if_held_down": [
+                  {
+                    "key_code": "left_option"
+                  }
+                ],
+                "to_delayed_action": {
+                  "to_if_invoked": [],
+                  "to_if_canceled": [
+                    {
+                      "key_code": "s"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "d"
+                },
+                "to_if_alone": [
+                  {
+                    "halt": true,
+                    "key_code": "d",
+                    "modifiers": []
+                  }
+                ],
+                "to_if_held_down": [
+                  {
+                    "key_code": "left_command"
+                  }
+                ],
+                "to_delayed_action": {
+                  "to_if_invoked": [],
+                  "to_if_canceled": [
+                    {
+                      "key_code": "d"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "f"
+                },
+                "to_if_alone": [
+                  {
+                    "halt": true,
+                    "key_code": "f",
+                    "modifiers": []
+                  }
+                ],
+                "to_if_held_down": [
+                  {
+                    "key_code": "left_shift"
+                  }
+                ],
+                "to_delayed_action": {
+                  "to_if_invoked": [],
+                  "to_if_canceled": [
+                    {
+                      "key_code": "f"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "j"
+                },
+                "to_if_alone": [
+                  {
+                    "halt": true,
+                    "key_code": "j",
+                    "modifiers": []
+                  }
+                ],
+                "to_if_held_down": [
+                  {
+                    "key_code": "right_shift"
+                  }
+                ],
+                "to_delayed_action": {
+                  "to_if_invoked": [],
+                  "to_if_canceled": [
+                    {
+                      "key_code": "j"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "k"
+                },
+                "to_if_alone": [
+                  {
+                    "halt": true,
+                    "key_code": "k",
+                    "modifiers": []
+                  }
+                ],
+                "to_if_held_down": [
+                  {
+                    "key_code": "right_command"
+                  }
+                ],
+                "to_delayed_action": {
+                  "to_if_invoked": [],
+                  "to_if_canceled": [
+                    {
+                      "key_code": "k"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "l"
+                },
+                "to_if_alone": [
+                  {
+                    "halt": true,
+                    "key_code": "l",
+                    "modifiers": []
+                  }
+                ],
+                "to_if_held_down": [
+                  {
+                    "key_code": "right_option"
+                  }
+                ],
+                "to_delayed_action": {
+                  "to_if_invoked": [],
+                  "to_if_canceled": [
+                    {
+                      "key_code": "l"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "semicolon"
+                },
+                "to_if_alone": [
+                  {
+                    "halt": true,
+                    "key_code": "semicolon",
+                    "modifiers": []
+                  }
+                ],
+                "to_if_held_down": [
+                  {
+                    "key_code": "right_control"
+                  }
+                ],
+                "to_delayed_action": {
+                  "to_if_invoked": [],
+                  "to_if_canceled": [
+                    {
+                      "key_code": "semicolon"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "description": "Stupid dead keys",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "close_bracket",
+                  "modifiers": {
+                    "mandatory": [
+                      "shift"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "key_code": "close_bracket",
+                    "modifiers": [
+                      "left_option"
+                    ]
+                  },
+                  {
+                    "key_code": "spacebar"
+                  }
+                ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "equal_sign",
+                  "modifiers": {
+                    "mandatory": [
+                      "shift"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "key_code": "equal_sign",
+                    "modifiers": [
+                      "shift"
+                    ]
+                  },
+                  {
+                    "key_code": "spacebar"
+                  }
                 ]
               }
             ]
           }
         ],
         "parameters": {
-          "basic.to_if_alone_timeout_milliseconds": 1000,
-          "basic.to_if_held_down_threshold_milliseconds": 500,
-          "basic.to_delayed_action_delay_milliseconds": 500,
-          "basic.simultaneous_threshold_milliseconds": 50,
+          "basic.to_if_alone_timeout_milliseconds": 200,
+          "basic.to_if_held_down_threshold_milliseconds": 100,
+          "basic.to_delayed_action_delay_milliseconds": 200,
+          "basic.simultaneous_threshold_milliseconds": 25,
           "mouse_motion_to_scroll.speed": 100
         }
       },
