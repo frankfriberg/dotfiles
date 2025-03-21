@@ -4,8 +4,8 @@ node_modules
 .config/raycast/extensions
 .config/gcloud
 .config/gh
+.config/github-copilot/apps.json
+.config/github-copilot/versions.json
 
 .tmux/plugins/*
 !.tmux/plugins/tpm
-.config/github-copilot/apps.json
-.config/github-copilot/versions.json
