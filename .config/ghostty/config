@@ -6,9 +6,30 @@ macos-titlebar-style = hidden
 
 adjust-cursor-thickness = 50%
 
-font-family = "JetBrains Mono NL"
+font-family = JetBrains Mono
+font-family = Symbols Nerd Font Mono
 font-style = "Medium"
 font-feature = -calt, -liga, -dlig
 font-size = 14
 
 window-save-state=always
+
+adjust-cell-width = -1
+
+keybind = clear
+keybind = cmd+1=text:\x01\x31
+keybind = cmd+2=text:\x01\x32
+keybind = cmd+3=text:\x01\x33
+keybind = cmd+4=text:\x01\x34
+keybind = cmd+5=text:\x01\x35
+keybind = cmd+7=text:\x01\x36
+keybind = cmd+7=text:\x01\x37
+keybind = cmd+8=text:\x01\x38
+keybind = cmd+9=text:\x01\x39
+
+keybind = cmd+t=text:\x01c
+keybind = cmd+w=text:\x01x
+keybind = cmd+s=text:\x01s
+
+keybind = cmd+c=copy_to_clipboard
+keybind = cmd+v=paste_from_clipboard
