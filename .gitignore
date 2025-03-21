@@ -7,3 +7,5 @@ node_modules
 
 .tmux/plugins/*
 !.tmux/plugins/tpm
+.config/github-copilot/apps.json
+.config/github-copilot/versions.json
