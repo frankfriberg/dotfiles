@@ -5,7 +5,6 @@ local colors = require("colors")
 local battery = sbar.add("item", "widgets.battery.item", {
 	position = "right",
 	update_freq = 180,
-	padding_right = 10,
 	padding_left = defaults.paddings,
 	icon = {
 		padding_right = 5,
@@ -28,7 +27,6 @@ battery:subscribe({ "routine", "power_source_change", "system_woke", "theme_chan
 			label = charge .. "%"
 		end
 
-		local color = palette.green
 		local charging, _, _ = batt_info:find("AC Power")
 
 		if charging then
@@ -40,15 +38,14 @@ battery:subscribe({ "routine", "power_source_change", "system_woke", "theme_chan
 				icon = icons.battery._75
 			elseif found and charge > 40 then
 				icon = icons.battery._50
+				bg = palette.transparent
 			elseif found and charge > 20 then
 				icon = icons.battery._25
 				bg = palette.peach
-				color = palette.bg
 				fg = palette.bg
 			else
 				icon = icons.battery._0
 				bg = palette.red
-				color = palette.bg
 				fg = palette.bg
 			end
 		end
@@ -56,15 +53,17 @@ battery:subscribe({ "routine", "power_source_change", "system_woke", "theme_chan
 		battery:set({
 			icon = {
 				string = icon,
-				color = color,
+				color = fg,
 				padding_right = 5,
 			},
 			label = {
 				string = label,
 				color = fg,
+				padding_right = bg and 5,
 			},
 			background = {
 				color = bg,
+				padding_left = bg and 5,
 			},
 		})
 	end)

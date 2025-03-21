@@ -3,7 +3,7 @@ local icons = require("icons")
 local volume_percent = sbar.add("item", "widgets.volume.percentage.item", {
 	position = "right",
 	icon = {
-		padding_right = 7,
+		padding_right = 5,
 	},
 	label = {
 		string = "??%",

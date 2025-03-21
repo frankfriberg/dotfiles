@@ -58,7 +58,7 @@ cal:subscribe({ "forced", "routine", "system_woke" }, function()
 			local events = format_events(result)
 			local palette = colors.currentPalette
 
-			local event_label
+			local event_label = ""
 			local is_now = false
 			local is_soon = false
 
@@ -75,8 +75,12 @@ cal:subscribe({ "forced", "routine", "system_woke" }, function()
 					is_soon = true
 				end
 
-				event_label =
-					string.format(": %s %s %s", events[1].title, is_now and "to" or "from", events[1].start_at)
+				event_label = string.format(
+					": %s %s %s",
+					events[1].title,
+					is_now and "to" or "from",
+					is_now and events[1].end_at or events[1].start_at
+				)
 			end
 
 			local date = string.format("%s %s", "􀉉", os.date("%a %d %b"))
