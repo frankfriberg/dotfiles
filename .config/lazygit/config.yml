@@ -1,0 +1,49 @@
+git:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+gui:
+  showFileTree: false
+  theme:
+    selectedLineBgColor:
+      - reverse
+os:
+  editPreset: "nvim-remote"
+customCommands:
+  - key: 'u'
+    command: 'git submodule update -- {{.SelectedFile.Name}}'
+    context: 'files'
+    description: 'Update submodule'
+  - key: "E"
+    description: "Make an empty commit"
+    context: "global"
+    command: 'git commit --allow-empty -m "{{index .PromptResponses 0}}"'
+    prompts:
+        - type: "input"
+          title: "Empty commit message"
+          initialValue: ""
+  - key: "<c-p>"
+    description: "Push specific branch"
+    context: "localBranches"
+    command: "git {{.Form.PushCommand}} origin {{.Form.Branch}}"
+    prompts:
+        # - type: 'menuFromCommand'
+        #   title: 'Which branch?'
+        #   key: 'Branch'
+        #   command: git branch --merged | sed 's/^\* //' | awk '{$1=$1; print}' | grep -Ev '^(main|master)$' | tr '\n' ' ' | sed 's/ $//'
+        - type: "input"
+          title: "Which branch?"
+          key: "Branch"
+          # initialValue: "{{.SelectedLocalBranch.Name}}"
+          suggestions:
+              command: git branch -vv --merged | sed 's/^\* //' | awk '$3 !~ /origin/ || $4 == "ahead" {print $1}' | grep -Ev '^(main|master)$' | tr '\n' ' ' | sed 's/ $//'
+              # preset: 'branches'
+        - type: "menu"
+          title: "How to push branch {{.Form.Branch}}?"
+          key: "PushCommand"
+          options:
+              - value: "push"
+              - value: "push --force-with-lease"
+  - key: "a"
+    context: "localBranches"
+    command: git branch --merged | sed 's/^\* //' | awk '{$1=$1; print}' | grep -Ev '^(main|master)$' | tr '\n' ' ' | sed 's/ $//'
