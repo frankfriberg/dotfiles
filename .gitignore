@@ -4,3 +4,6 @@ node_modules
 .config/raycast/extensions
 .config/gcloud
 .config/gh
+
+.tmux/plugins/*
+!.tmux/plugins/tpm
