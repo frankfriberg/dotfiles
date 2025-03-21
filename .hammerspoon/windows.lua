@@ -1,90 +1,72 @@
 local M = {}
 local filledWindows = {}
-
 local gutter = 8
-local topBar = 22 + 8
 
-local function hasNotch(screen)
-	local screenName = screen:name()
-	return screenName:match("Built%-in Liquid Retina XDR Display") or screenName:match("Built%-in Retina Display")
+local function getFrameDimensions(frame, numColumns, numRows)
+	local width = (frame.w - gutter * (numColumns + 1)) / numColumns
+	local height = (frame.h - gutter * (numRows + 1)) / numRows
+	return width, height
 end
 
-local function getTopPadding()
-	local screen = hs.screen.mainScreen()
+local function createFrame(x, y, w, h)
+	return { x = x, y = y, w = w, h = h }
+end
 
-	local topPadding = gutter
-	if not hasNotch(screen) then
-		topPadding = topPadding + topBar
+local function createFullscreenFrame(frame)
+	return createFrame(frame.x + gutter, frame.y, frame.w - (gutter * 2), frame.h - gutter)
+end
+
+local function areWindowsInLayout(windows, checkFn)
+	for _, window in ipairs(windows) do
+		if not checkFn(window) then
+			return false
+		end
 	end
-
-	return topPadding
+	return true
 end
 
-local function getHeight(frame, rows)
-	local topPadding = getTopPadding()
-	local height = (frame.h - topPadding - gutter * rows) / rows
-	return height
-end
-
-local function getWidth(frame, columns)
-	local width = (frame.w - gutter * (columns + 1)) / columns
-
-	return width
-end
-
-local function getFullVertical(frame)
-	local height = getHeight(frame, 1)
-	local topPadding = getTopPadding()
-	local y = frame.y + topPadding
-
-	return height, y
-end
-
-local horizontalBalance = function(windows)
+local function horizontalBalance(windows)
 	local screen = hs.screen.mainScreen()
 	local frame = screen:frame()
-
 	local numColumns = #windows
-	local width = getWidth(frame, numColumns)
-	local height, y = getFullVertical(frame)
 
-	for index, window in ipairs(windows) do
-		local col = (index - 1) % numColumns
-		local x = frame.x + gutter + (col * (width + gutter))
+	local width, height = getFrameDimensions(frame, numColumns, 1)
 
-		window:setFrame({
-			x = x,
-			y = y,
-			w = width,
-			h = height,
-		})
+	local function isHorizontallyBalanced(window)
+		local wf = window:frame()
+		return math.abs(wf.w - width) < 2 and math.abs(wf.h - height) < 2
+	end
+
+	if areWindowsInLayout(windows, isHorizontallyBalanced) then
+		local fullFrame = createFullscreenFrame(frame)
+		for _, window in ipairs(windows) do
+			window:setFrame(fullFrame)
+		end
+	else
+		for index, window in ipairs(windows) do
+			local col = (index - 1) % numColumns
+			local x = frame.x + gutter + (col * (width + gutter))
+
+			window:setFrame(createFrame(x, frame.y, width, height))
+		end
 	end
 end
 
-local verticalBalance = function(windows)
+local function verticalBalance(windows)
 	local screen = hs.screen.mainScreen()
 	local frame = screen:frame()
-	local topPadding = getTopPadding()
 
 	local numRows = #windows
-	local width = getWidth(frame, 1)
-	local height = getHeight(frame, numRows)
+	-- Use getFrameDimensions to calculate width and height
+	local width, height = getFrameDimensions(frame, 1, numRows)
 
 	for index, window in ipairs(windows) do
 		local row = (index - 1) % numRows
-		local y = frame.y + topPadding + (row * (height + gutter))
-		local x = frame.x + gutter
-
-		window:setFrame({
-			x = x,
-			y = y,
-			w = width,
-			h = height,
-		})
+		window:setFrame(createFrame(frame.x + gutter, frame.y + gutter + (row * (height + gutter)), width, height))
 	end
 end
 
-local split = function(callback)
+local function split(callback)
 	local focusedWin = hs.window.focusedWindow()
 	local targetWin = focusedWin:otherWindowsSameScreen()
 
@@ -93,18 +75,16 @@ local split = function(callback)
 
 		for _, window in ipairs(targetWin) do
 			table.insert(options, {
-				["text"] = string.format("%s: %s", window:application():name(), window:title()),
-				["window"] = window,
+				text = string.format("%s: %s", window:application():name(), window:title()),
+				window = window,
 			})
 		end
 
 		hs.chooser
 			.new(function(choice)
-				if not choice then
-					return
+				if choice then
+					callback({ focusedWin, choice.window })
 				end
-
-				callback({ focusedWin, choice.window })
 			end)
 			:choices(options)
 			:show()
@@ -113,9 +93,24 @@ local split = function(callback)
 	end
 end
 
+local function rotateWindows(windows)
+	if #windows <= 1 then
+		return
+	end
+
+	local frames = {}
+	for _, win in ipairs(windows) do
+		table.insert(frames, win:frame())
+	end
+
+	for i, win in ipairs(windows) do
+		local nextIndex = i % #windows + 1
+		win:setFrame(frames[nextIndex])
+	end
+end
+
 M.balanceWindows = function()
-	local windows = hs.window.visibleWindows()
-	horizontalBalance(windows)
+	horizontalBalance(hs.window.visibleWindows())
 end
 
 M.splitHorizontal = function()
@@ -126,9 +121,13 @@ M.splitVertical = function()
 	split(verticalBalance)
 end
 
+M.rotateWindows = function()
+	local windows = hs.window.visibleWindows()
+	rotateWindows(windows)
+end
+
 M.cycleAllWindowsInSpace = function(forward)
 	local windows = hs.window.visibleWindows()
-
 	local currentWindow = hs.window.focusedWindow()
 	local currentIndex = 1
 
@@ -139,21 +138,15 @@ M.cycleAllWindowsInSpace = function(forward)
 		end
 	end
 
-	local nextIndex
-	if forward then
-		nextIndex = currentIndex + 1
-		if nextIndex > #windows then
-			nextIndex = 1
-		end
-	else
-		nextIndex = currentIndex - 1
-		if nextIndex < 1 then
-			nextIndex = #windows
-		end
+	local nextIndex = forward and currentIndex + 1 or currentIndex - 1
+	if nextIndex > #windows then
+		nextIndex = 1
+	end
+	if nextIndex < 1 then
+		nextIndex = #windows
 	end
 
-	local nextWindow = windows[nextIndex]
-	nextWindow:focus()
+	windows[nextIndex]:focus()
 end
 
 M.leftHalf = function()
@@ -161,15 +154,10 @@ M.leftHalf = function()
 	local screen = win:screen()
 	local frame = screen:frame()
 
-	local height, y = getFullVertical(frame)
-	local width = getWidth(frame, 2)
+	-- Use getFrameDimensions to calculate width
+	local width, height = getFrameDimensions(frame, 2, 1)
 
-	win:setFrame({
-		x = frame.x + gutter,
-		y = y,
-		w = width,
-		h = height,
-	})
+	win:setFrame(createFrame(frame.x + gutter, frame.y + gutter, width, height))
 end
 
 M.rightHalf = function()
@@ -177,51 +165,29 @@ M.rightHalf = function()
 	local screen = win:screen()
 	local frame = screen:frame()
 
-	local height, y = getFullVertical(frame)
-	local width = getWidth(frame, 2)
+	-- Use getFrameDimensions to calculate width
+	local width, height = getFrameDimensions(frame, 2, 1)
 
-	win:setFrame({
-		x = frame.x + (frame.w / 2) + (gutter / 2),
-		y = y,
-		w = width,
-		h = height,
-	})
+	win:setFrame(createFrame(frame.x + width + (gutter * 2), frame.y + gutter, width, height))
 end
 
 M.fillScreen = function()
 	local win = hs.window.focusedWindow()
-	local screen = win:screen()
-	local frame = screen:frame()
-
-	local height, y = getFullVertical(frame)
-	local width = getWidth(frame, 1)
-
-	local fillFrame = {
-		x = frame.x + gutter,
-		y = y,
-		w = width,
-		h = height,
-	}
-
-	win:setFrame(fillFrame)
+	win:setFrame(createFullscreenFrame(win:screen():frame()))
+	-- Track filled window if needed
+	filledWindows[win:id()] = win
 end
 
-hs.screen.watcher.new(function()
-	for _, win in pairs(filledWindows) do
-		local screen = win:screen()
-		local frame = screen:frame()
-		local height, y = getFullVertical(frame)
-		local width = getWidth(frame, 1)
-
-		local fillFrame = {
-			x = frame.x + gutter,
-			y = y,
-			w = width,
-			h = height,
-		}
-
-		win:setFrame(fillFrame)
+-- Initialize the screen watcher
+local screenWatcher = hs.screen.watcher.new(function()
+	for id, win in pairs(filledWindows) do
+		if win:isVisible() then
+			win:setFrame(createFullscreenFrame(win:screen():frame()))
+		else
+			filledWindows[id] = nil -- Clean up windows that are no longer visible
+		end
 	end
 end)
+screenWatcher:start()
 
 return M
