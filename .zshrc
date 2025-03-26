@@ -7,4 +7,6 @@ zstyle ':omz:update' mode auto
 
 plugins=(git zoxide nvm)
 
+alias nvim="nvim --listen /tmp/nvim-server-$(basename $PWD).pipe"
+
 source $ZSH/oh-my-zsh.sh

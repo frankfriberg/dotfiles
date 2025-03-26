@@ -8,7 +8,9 @@ gui:
     selectedLineBgColor:
       - reverse
 os:
-  editPreset: "nvim-remote"
+  open: nvim --server /tmp/nvim-server-$(basename $PWD).pipe --remote-send "<cmd>e {{filename}}<cr>" 
+  edit: nvim --server /tmp/nvim-server-$(basename $PWD).pipe --remote-send "<cmd>e {{filename}}<cr>"
+  editAtLine: nvim --server /tmp/nvim-server-$(basename $PWD).pipe --remote-send "<cmd>e +{{line}} {{filename}}<cr>"
 customCommands:
   - key: 'u'
     command: 'git submodule update -- {{.SelectedFile.Name}}'
