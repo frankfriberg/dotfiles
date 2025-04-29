@@ -1,16 +1,16 @@
 git:
   paging:
     colorArg: always
-    pager: delta --dark --paging=never
+    pager: delta --dark --paging=never 
 gui:
   showFileTree: false
   theme:
     selectedLineBgColor:
       - reverse
 os:
-  open: nvim --server /tmp/nvim-server-$(basename $PWD).pipe --remote-send "<cmd>e {{filename}}<cr>" 
-  edit: nvim --server /tmp/nvim-server-$(basename $PWD).pipe --remote-send "<cmd>e {{filename}}<cr>"
-  editAtLine: nvim --server /tmp/nvim-server-$(basename $PWD).pipe --remote-send "<cmd>e +{{line}} {{filename}}<cr>"
+  open: nvim --server --remote-send "<cmd>e {{filename}}<cr>" 
+  edit: nvim --server "$NVIM" --remote-send "<cmd>e {{filename}}<cr>"
+  editAtLine: nvim --server "$NVIM" --remote-send "<cmd>e +{{line}} {{filename}}<cr>"
 customCommands:
   - key: 'u'
     command: 'git submodule update -- {{.SelectedFile.Name}}'
