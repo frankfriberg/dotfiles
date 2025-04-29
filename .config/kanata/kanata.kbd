@@ -29,7 +29,7 @@
 
 (defvar
   tap-time 200
-  hold-time 400
+  hold-time 300
   fast-typing-time 200
   left-hand-keys (
     grv 1 2 3 4 5 
