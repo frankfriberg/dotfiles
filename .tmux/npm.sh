@@ -41,19 +41,19 @@ search_npm_packages() {
 run_npm_scripts() {
   if [[ ! -f "package.json" ]]; then
     tmux display-message "No package.json found in the current directory"
-    return 1
+    return 0
   fi
 
   if ! command -v jq >/dev/null 2>&1; then
     tmux display-message "jq is required but not installed"
-    return 1
+    return 0
   fi
 
   local scripts=$(jq -r '.scripts | to_entries | map("\(.key)|\(.value)") | .[]' package.json)
 
   if [[ -z "$scripts" ]]; then
     tmux display-message "No scripts found in package.json"
-    return 1
+    return 0
   fi
 
   local scriptstorun="install|Install dependencies"$'\n'"install-package|Install package"$'\n'"$scripts"
