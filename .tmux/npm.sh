@@ -33,9 +33,30 @@ search_npm_packages() {
       --track
   )
 
-  if [[ -n "$selected_packages" ]]; then
-    echo "$selected_packages" | sed 's/ => .*//'
+  if [[ -n "$packages" ]]; then
+    echo "$packages" | sed 's/ => .*//'
   fi
+}
+
+execute_npm_command() {
+  local command="$1"
+  local script_name="$2"
+  local display_mode="$3"
+  local current_pane="$4"
+
+  case "$display_mode" in
+  "current")
+    if is_pane_running_command "$current_pane"; then
+      tmux new-window -n "npm:$script_name" "$command"
+    else
+      tmux rename-pane "npm:$script_name"
+      tmux send-keys -t "$current_pane" C-u "$command" C-m
+    fi
+    ;;
+  "popup")
+    tmux display-popup -E -h 80% -w 80% -T "npm:$script_name" "$command"
+    ;;
+  esac
 }
 
 run_npm_scripts() {
@@ -58,34 +79,60 @@ run_npm_scripts() {
 
   local scriptstorun="install|Install dependencies"$'\n'"install-package|Install package"$'\n'"$scripts"
   local current_pane=$(tmux display-message -p "#{pane_id}")
+  local display_mode="popup"
 
-  local selected=$(echo "$scriptstorun" | sed 's/|/ => /g' | fzf --tmux --reverse --border-label=" NPM Scripts " \
-    --color=border:blue,gutter:-1,label:-1,bg+:0,info:gray,pointer:blue,label:blue)
+  while true; do
+    local result=$(echo "$scriptstorun" | sed 's/|/ => /g' | fzf --tmux --reverse \
+      --border-label=" NPM Scripts ($(if [[ "$display_mode" == "popup" ]]; then echo -e "\033[33mpopup\033[0m"; else echo -e "\033[36mwindow\033[0m"; fi)) " \
+      --color=border:blue,gutter:-1,label:-1,bg+:0,info:gray,pointer:blue,label:blue \
+      --header "<C-p>: Change display mode" \
+      --expect="ctrl-p")
 
-  if [[ -n "$selected" ]]; then
-    local script_name=$(echo "$selected" | sed 's/ => .*//')
+    local key=$(echo "$result" | head -1)
+    local selection=$(echo "$result" | tail -n +2)
+
+    if [[ -z "$key" && -n "$selection" ]]; then
+      break
+    fi
+
+    case "$key" in
+    "ctrl-p")
+      # Toggle between popup and window modes
+      if [[ "$display_mode" == "popup" ]]; then
+        display_mode="window"
+      else
+        display_mode="popup"
+      fi
+      continue
+      ;;
+    *)
+      if [[ -n "$selection" ]]; then
+        break
+      fi
+      ;;
+    esac
+  done
+
+  # Process the selection if one was made
+  if [[ -n "$selection" ]]; then
+    local script_name=$(echo "$selection" | sed 's/ => .*//')
     local command="npm run $script_name"
 
-    if [ $script_name == "install" ]; then
+    if [ "$script_name" == "install" ]; then
       command="npm $script_name"
     fi
 
-    if [ $script_name == "install-package" ]; then
+    if [ "$script_name" == "install-package" ]; then
       local packages=$(search_npm_packages)
 
       if [[ -n "$packages" ]]; then
         command="npm install ${packages}"
       else
-        exit 0
+        return 0
       fi
     fi
 
-    if is_pane_running_command "$current_pane"; then
-      tmux new-window -n "npm:$script_name" "$command"
-    else
-      tmux rename-pane "npm:$script_name"
-      tmux send-keys -t "$current_pane" C-u "$command" C-m
-    fi
+    execute_npm_command "$command" "$script_name" "$display_mode" "$current_pane"
   fi
 }
 
