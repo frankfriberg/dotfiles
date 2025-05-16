@@ -154,7 +154,6 @@ M.leftHalf = function()
 	local screen = win:screen()
 	local frame = screen:frame()
 
-	-- Use getFrameDimensions to calculate width
 	local width, height = getFrameDimensions(frame, 2, 1)
 
 	win:setFrame(createFrame(frame.x + gutter, frame.y, width, height))
@@ -165,7 +164,6 @@ M.rightHalf = function()
 	local screen = win:screen()
 	local frame = screen:frame()
 
-	-- Use getFrameDimensions to calculate width
 	local width, height = getFrameDimensions(frame, 2, 1)
 
 	win:setFrame(createFrame(frame.x + width + (gutter * 2), frame.y, width, height))

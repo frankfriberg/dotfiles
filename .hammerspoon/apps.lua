@@ -17,6 +17,16 @@ for key, app in pairs(apps) do
 		if runningApp and runningApp:isFrontmost() then
 			runningApp:hide()
 		else
+			local frame = hs.screen.mainScreen():frame()
+			local window = runningApp:mainWindow()
+			local width = math.max(frame.w / 2, 1500)
+			local height = math.max(frame.h / 2, 1000)
+			window:setFrame({
+				w = width,
+				h = height,
+				x = frame.w / 2 - width / 2,
+				y = frame.h / 2 - height / 2,
+			})
 			hs.application.open(app)
 		end
 	end)
