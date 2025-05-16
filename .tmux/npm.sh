@@ -44,17 +44,41 @@ execute_npm_command() {
   local display_mode="$3"
   local current_pane="$4"
 
+  local wrapped_command='
+    command_to_run="$1";
+    title="$2";
+
+    # Run the command and capture both output and exit code
+    echo "$ $command_to_run";
+    eval "$command_to_run";
+    cmd_exit=$?;
+
+    # Show status with color, but always treat as "success" for tmux
+    if [ $cmd_exit -eq 0 ]; then
+      echo -e "\n\033[1;32mCommand completed successfully ✓\033[0m";
+    else
+      echo -e "\n\033[1;31mCommand failed with exit code: $cmd_exit ✗\033[0m";
+    fi;
+
+    # Always wait for user input regardless of exit code
+    echo -e "\n\033[1;33mPress Enter to close...\033[0m";
+    read -r dummy_var || true;
+    exit 0;  # Always exit with success to keep window/popup open
+  '
+
+  local title="npm:$script_name"
+
   case "$display_mode" in
+  "popup")
+    tmux display-popup -E -h 80% -w 80% -T "$title" "bash -c '$wrapped_command' _ '$command' '$title'"
+    ;;
   "window")
     if is_pane_running_command "$current_pane"; then
-      tmux new-window -n "npm:$script_name" "$command"
+      tmux new-window -n "$title" "bash -c '$wrapped_command' _ '$command' '$title'"
     else
-      tmux rename-pane "npm:$script_name"
+      tmux rename-pane "$title"
       tmux send-keys -t "$current_pane" C-u "$command" C-m
     fi
-    ;;
-  "popup")
-    tmux display-popup -E -h 80% -w 80% -T "npm:$script_name" "$command"
     ;;
   esac
 }
