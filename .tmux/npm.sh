@@ -45,7 +45,7 @@ execute_npm_command() {
   local current_pane="$4"
 
   case "$display_mode" in
-  "current")
+  "window")
     if is_pane_running_command "$current_pane"; then
       tmux new-window -n "npm:$script_name" "$command"
     else
@@ -79,14 +79,20 @@ run_npm_scripts() {
 
   local scriptstorun="install|Install dependencies"$'\n'"install-package|Install package"$'\n'"$scripts"
   local current_pane=$(tmux display-message -p "#{pane_id}")
-  local display_mode="popup"
+
+  local display_mode
+  if is_pane_running_command "$current_pane"; then
+    display_mode="popup"
+  else
+    display_mode="window"
+  fi
 
   while true; do
     local result=$(echo "$scriptstorun" | sed 's/|/ => /g' | fzf --tmux --reverse \
       --border-label=" NPM Scripts ($(if [[ "$display_mode" == "popup" ]]; then echo -e "\033[33mpopup\033[0m"; else echo -e "\033[36mwindow\033[0m"; fi)) " \
       --color=border:blue,gutter:-1,label:-1,bg+:0,info:gray,pointer:blue,label:blue \
-      --header "<C-p>: Change display mode" \
-      --expect="ctrl-p")
+      --header "<C-p>: Change display mode | <esc>: Cancel" \
+      --expect="ctrl-p,esc")
 
     local key=$(echo "$result" | head -1)
     local selection=$(echo "$result" | tail -n +2)
@@ -104,6 +110,9 @@ run_npm_scripts() {
         display_mode="popup"
       fi
       continue
+      ;;
+    "esc")
+      return 0
       ;;
     *)
       if [[ -n "$selection" ]]; then
