@@ -1,0 +1,8 @@
+jeffreytse/zsh-vi-mode
+ajeetdsouza/zoxide
+
+Aloxaf/fzf-tab
+
+zdharma-continuum/fast-syntax-highlighting kind:defer
+
+aspirewit/zsh-nvm-auto-switch
