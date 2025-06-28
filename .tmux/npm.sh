@@ -61,8 +61,8 @@ execute_npm_command() {
     fi;
 
     # Always wait for user input regardless of exit code
-    echo -e "\n\033[1;33mPress Enter to close...\033[0m";
-    read -r dummy_var || true;
+    echo -e "\n\033[1;33mPress any key to close...\033[0m";
+    read -n 1 -s dummy_var || true;
     exit 0;  # Always exit with success to keep window/popup open
   '
 
