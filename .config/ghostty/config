@@ -3,6 +3,8 @@ theme = dark:rose-pine-moon,light:rose-pine-dawn
 window-padding-x = 10
 window-padding-y = 5, 5
 macos-titlebar-style = hidden
+confirm-close-surface = false
+mouse-hide-while-typing = true
 
 adjust-cursor-thickness = 50%
 
