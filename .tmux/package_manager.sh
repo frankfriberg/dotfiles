@@ -1,5 +1,34 @@
 #!/usr/bin/env bash
 
+detect_package_manager() {
+  local pm_info=()
+  local default_pm="npm"
+
+  # Check for lock files
+  if [[ -f "bun.lockb" ]]; then
+    pm_info=("bun" "Bun" "bun.lockb")
+  elif [[ -f "pnpm-lock.yaml" ]]; then
+    pm_info=("pnpm" "PNPM" "pnpm-lock.yaml")
+  elif [[ -f "yarn.lock" ]]; then
+    pm_info=("yarn" "Yarn" "yarn.lock")
+  elif [[ -f "package-lock.json" ]]; then
+    pm_info=("npm" "NPM" "package-lock.json")
+  else
+    # No lock file found, check for available executables
+    if command -v bun >/dev/null 2>&1; then
+      pm_info=("bun" "Bun" "")
+    elif command -v pnpm >/dev/null 2>&1; then
+      pm_info=("pnpm" "PNPM" "")
+    elif command -v yarn >/dev/null 2>&1; then
+      pm_info=("yarn" "Yarn" "")
+    else
+      pm_info=("$default_pm" "NPM" "")
+    fi
+  fi
+
+  echo "${pm_info[0]} ${pm_info[1]}"
+}
+
 is_pane_running_command() {
   local pane_id=$1
   local pane_pid=$(tmux display-message -p -t "$pane_id" "#{pane_pid}")
@@ -8,28 +37,53 @@ is_pane_running_command() {
   [ "$pane_children" -gt 0 ]
 }
 
-search_npm() {
-  query="$1"
-  if [[ -n "$query" ]]; then
-    npm search --json "$query" 2>/dev/null | jq -r '.[] | "\(.name) => \(.description)"' 3>/dev/null
+search_packages() {
+  local pm_cmd="$1"
+  local pm_name="$2"
+  local query="$3"
+
+  if [[ -z "$query" ]]; then
+    return
   fi
+
+  case "$pm_cmd" in
+  npm)
+    npm search --json "$query" 2>/dev/null | jq -r '.[] | "\(.name) => \(.description)"' 3>/dev/null
+    ;;
+  yarn)
+    # yarn doesn't have a good search command in newer versions, fall back to npm search
+    npm search --json "$query" 2>/dev/null | jq -r '.[] | "\(.name) => \(.description)"' 3>/dev/null
+    ;;
+  pnpm)
+    # pnpm search output isn't JSON by default, so we format it
+    pnpm search "$query" 2>/dev/null | tail -n +2 | awk '{name=$1; $1=""; desc=$0; gsub(/^ /, "", desc); print name " => " desc}' 3>/dev/null
+    ;;
+  bun)
+    # bun search output needs formatting
+    bun pm search "$query" 2>/dev/null | grep -v "^Searching" | awk '{name=$1; $1=""; desc=$0; gsub(/^ /, "", desc); print name " => " desc}' 3>/dev/null
+    ;;
+  esac
 }
 
-search_npm_packages() {
+select_packages() {
+  local pm_cmd="$1"
+  local pm_display="$2"
   local temp_file=$(mktemp)
   local selected_packages
 
-  export -f search_npm
+  export -f search_packages
+  export PM_CMD="$pm_cmd"
+  export PM_DISPLAY="$pm_display"
 
   local packages=$(
-    fzf --tmux --multi --reverse --border-label=' Install NPM Packages ' \
+    fzf --tmux --multi --reverse --border-label=" Install ${pm_display} Packages " \
       --color=border:blue,gutter:-1,label:-1,bg+:0,info:gray,pointer:blue,label:blue \
-      --prompt 'Search npm: ' \
+      --prompt "Search ${pm_cmd}: " \
       --header 'Enter search term, select multiple packages with TAB' \
       --query '' \
       --delimiter ' => ' \
       --with-nth 1.. \
-      --bind "change:reload:sleep 0.1; search_npm {q}" \
+      --bind "change:reload:sleep 0.1; search_packages $PM_CMD $PM_DISPLAY {q}" \
       --track
   )
 
@@ -38,11 +92,12 @@ search_npm_packages() {
   fi
 }
 
-execute_npm_command() {
+execute_package_command() {
   local command="$1"
   local script_name="$2"
   local display_mode="$3"
   local current_pane="$4"
+  local pm_display="$5"
 
   local wrapped_command='
     command_to_run="$1";
@@ -66,11 +121,11 @@ execute_npm_command() {
     exit 0;  # Always exit with success to keep window/popup open
   '
 
-  local title="npm:$script_name"
+  local title="${pm_display}:$script_name"
 
   case "$display_mode" in
   "popup")
-    tmux display-popup -E -h 80% -w 80% -T "$title" "bash -c '$wrapped_command' _ '$command' '$title'"
+    tmux display-popup -E -h 80% -w 80% -T "$pm_display" "bash -c '$wrapped_command' _ '$command' '$title'"
     ;;
   "window")
     if is_pane_running_command "$current_pane"; then
@@ -83,25 +138,29 @@ execute_npm_command() {
   esac
 }
 
-run_npm_scripts() {
+run_package_scripts() {
+  local pm_info=($(detect_package_manager))
+  local pm_cmd="${pm_info[0]}"
+  local pm_display="${pm_info[1]}"
+
   if [[ ! -f "package.json" ]]; then
-    tmux display-message "No package.json found in the current directory"
+    tmux display-message "No package.json found in the current directory for the detected package manager"
     return 0
   fi
 
   if ! command -v jq >/dev/null 2>&1; then
-    tmux display-message "jq is required but not installed"
+    tmux display-message "jq is required but not installed to parse scripts for the detected package manager"
     return 0
   fi
 
   local scripts=$(jq -r '.scripts | to_entries | map("\(.key)|\(.value)") | .[]' package.json)
 
   if [[ -z "$scripts" ]]; then
-    tmux display-message "No scripts found in package.json"
+    tmux display-message "No scripts found in the package.json for the detected package manager"
     return 0
   fi
 
-  local scriptstorun="install|Install dependencies"$'\n'"install-package|Install package"$'\n'"$scripts"
+  local scriptstorun="install|Install ${pm_display} dependencies"$'\n'"install-package|Install ${pm_display} package"$'\n'"$scripts"
   local current_pane=$(tmux display-message -p "#{pane_id}")
 
   local display_mode
@@ -113,7 +172,7 @@ run_npm_scripts() {
 
   while true; do
     local result=$(echo "$scriptstorun" | sed 's/|/ => /g' | fzf --tmux --reverse \
-      --border-label=" NPM Scripts ($(if [[ "$display_mode" == "popup" ]]; then echo -e "\033[33mpopup\033[0m"; else echo -e "\033[36mwindow\033[0m"; fi)) " \
+      --border-label=" ${pm_display} Scripts ($(if [[ "$display_mode" == "popup" ]]; then echo -e "\033[33mpopup\033[0m"; else echo -e "\033[36mwindow\033[0m"; fi)) " \
       --color=border:blue,gutter:-1,label:-1,bg+:0,info:gray,pointer:blue,label:blue \
       --header "<C-p>: Change display mode | <esc>: Cancel" \
       --expect="ctrl-p,esc")
@@ -146,7 +205,6 @@ run_npm_scripts() {
     esac
   done
 
-  # Process the selection if one was made
   if [[ -n "$selection" ]]; then
     local script_name=$(echo "$selection" | sed 's/ => .*//')
     local command="npm run $script_name"
@@ -156,18 +214,19 @@ run_npm_scripts() {
     fi
 
     if [ "$script_name" == "install-package" ]; then
-      local packages=$(search_npm_packages)
+      local pm_cmd="${pm_info[0]}"
+      local pm_display="${pm_info[1]}"
+      local packages=$(select_packages "$pm_cmd" "$pm_display")
 
       if [[ -n "$packages" ]]; then
-        command="npm install ${packages}"
+        command="$pm_cmd install ${packages}"
       else
         return 0
       fi
     fi
 
-    execute_npm_command "$command" "$script_name" "$display_mode" "$current_pane"
+    execute_package_command "$command" "$script_name" "$display_mode" "$current_pane" "$pm_display"
   fi
 }
 
-# Run the main function
-run_npm_scripts
+run_package_scripts
