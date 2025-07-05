@@ -73,7 +73,7 @@
   a (t! thrk-l a lmet)
   s (t! thrk-l s lsft)
   d (t! thrk-l d lctl)
-  f (t! thrk-l f lalt)
+  f (t! thrk-l f alt)
   j (t! thrk-r j lalt)
   k (t! thrk-r k rctl)
   l (t! thrk-r l rsft)
@@ -105,10 +105,10 @@
 )
 
 (deflayer symbol
-  esc     brdn  brup  _     _     _     prev  pp    next  mute  vold  volu  _
-  @arrow  1     A-'   3     4     5     prev  pp    next  mute  vold  _     ´     volu
-  lrld    S-1   S-2   S-3   S-4   S-5   S-6   S-7   S-8   S-9   S-0   S-+   S-´ 
-  lctl    +     S-0   S-'   '     A-'   A-¨   A-S-8 A-S-9 A-8   A-9   S-´   S-'   ret
-  lsft    <     z     x     c     v     b     grv   S-grv ,     .     -     up    rsft
-  fn      lctl  lalt  lmet                spc             rmet  ralt  left  down  right
+  esc     brdn  brup  _     _     _     prev  pp     next    mute  vold  volu  _
+  @arrow  1     RA-'  3     4     5     prev  pp     next    mute  vold  _     ´     volu
+  lrld    S-1   S-2   S-3   S-4   S-5   S-6   S-7    S-8     S-9   S-0   S-+   S-´ 
+  lctl    +     S-0   S-'   '     RA-'  RA-¨  RA-S-8 RA-S-9  RA-8  RA-9  S-´   S-'   fn
+  lsft    <     z     x     c     v     b     grv    S-grv   ,     .     -     up    rsft
+  fn      lctl  lalt  lmet                fn                 rmet  ralt  left  down  right
 )

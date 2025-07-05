@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>io.dreamsofcode.kanata</string>
+    <string>com.example.kanata</string>
 
     <key>ProgramArguments</key>
     <array>
