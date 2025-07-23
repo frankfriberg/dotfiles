@@ -19,9 +19,6 @@ if [ ! -d ~/Development ]; then
   mkdir ~/Development
 fi
 
-# Sketchybar
-info "Installing Sketchybar Lua..."
-(git clone https://github.com/FelixKratz/SbarLua.git /tmp/SbarLua && cd /tmp/SbarLua/ && make install && rm -rf /tmp/SbarLua/)
 brew bundle install
 
 setup_osx
