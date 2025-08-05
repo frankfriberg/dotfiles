@@ -6,6 +6,7 @@ set -o pipefail
 
 . scripts/utils.sh
 . scripts/osx.sh
+. scripts/kanata.sh
 
 if ! command -v brew &>/dev/null; then
   info "Installing brew..."
@@ -16,6 +17,9 @@ if [ ! -d ~/projects ]; then
   mkdir ~/projects
 fi
 
+brew bundle
 
 stow .
 
+setup_osx
+setup_kanata
