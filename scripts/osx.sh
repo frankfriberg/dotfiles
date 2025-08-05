@@ -25,8 +25,8 @@ setup_osx() {
 	# Show hidden files inside the finder
 	defaults write com.apple.finder "AppleShowAllFiles" -bool true
 
-  # Set default view to columns
-  defaults write com.apple.finder "FXPreferredViewStyle" -string "clmv" && killall Finder
+	# Set default view to columns
+	defaults write com.apple.finder "FXPreferredViewStyle" -string "clmv" && killall Finder
 
 	# Do not show warning when changing the file extension
 	defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
@@ -34,8 +34,8 @@ setup_osx() {
 	# Set search scope to current folder
 	defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
 
-  # Sort folders first
-  defaults write com.apple.finder "_FXSortFoldersFirst" -bool "true" && killall Finder
+	# Sort folders first
+	defaults write com.apple.finder "_FXSortFoldersFirst" -bool "true" && killall Finder
 
 	# Save screenshots in PNG format (other options: BMP, GIF, JPG, PDF, TIFF)
 	defaults write com.apple.screencapture type -string "png"
@@ -56,21 +56,25 @@ setup_osx() {
 	defaults write com.apple.dock largesize -float 128
 	defaults write com.apple.dock "minimize-to-application" -bool true
 	defaults write com.apple.dock tilesize -float 32
-  defaults write com.apple.dock autohide-time-modifier -float 0.3
-  defaults write com.apple.dock "show-recents" -bool false
+	defaults write com.apple.dock autohide-time-modifier -float 0.3
+	defaults write com.apple.dock "show-recents" -bool false
 
 	# Secondary click in external mouse
 	defaults write com.apple.AppleMultitouchMouse MouseButtonMode -string "TwoButton"
 
-  # Allows tab selecting buttons
-  defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
+	# Allows tab selecting buttons
+	defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
 
-  # Don't show accent menu
-  defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool "false"
+	# Don't show accent menu
+	defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool "false"
 
-  # Don't rearrange spaces
-  defaults write com.apple.dock "mru-spaces" -bool "false" && killall Dock
+	# Don't rearrange spaces
+	defaults write com.apple.dock "mru-spaces" -bool "false" && killall Dock
 
 	# Disable startup sound
 	sudo nvram SystemAudioVolume=%01
+
+	# Sets the key repeat and initial delay
+	defaults write -g InitialKeyRepeat -int 12
+	defaults write -g KeyRepeat -int 2
 }
