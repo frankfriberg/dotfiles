@@ -126,12 +126,24 @@ M.rotateWindows = function()
 	rotateWindows(windows)
 end
 
+local function isPipWindow(win)
+	local title = win:title()
+	return title == nil or title == "" or title == "Picture-in-Picture" or title == "PiP"
+end
+
 M.cycleAllWindowsInSpace = function(forward)
 	local windows = hs.window.visibleWindows()
+	local normalWindows = {}
+	for _, win in ipairs(windows) do
+		if not isPipWindow(win) then
+			table.insert(normalWindows, win)
+		end
+	end
+
 	local currentWindow = hs.window.focusedWindow()
 	local currentIndex = 1
 
-	for i, win in ipairs(windows) do
+	for i, win in ipairs(normalWindows) do
 		if win == currentWindow then
 			currentIndex = i
 			break
@@ -139,14 +151,14 @@ M.cycleAllWindowsInSpace = function(forward)
 	end
 
 	local nextIndex = forward and currentIndex + 1 or currentIndex - 1
-	if nextIndex > #windows then
+	if nextIndex > #normalWindows then
 		nextIndex = 1
 	end
 	if nextIndex < 1 then
-		nextIndex = #windows
+		nextIndex = #normalWindows
 	end
 
-	windows[nextIndex]:focus()
+	normalWindows[nextIndex]:focus()
 end
 
 M.leftHalf = function()
