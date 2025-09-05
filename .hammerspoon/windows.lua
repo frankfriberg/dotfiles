@@ -3,8 +3,8 @@ local filledWindows = {}
 local gutter = 8
 
 local function getFrameDimensions(frame, numColumns, numRows)
-	local width = (frame.w - gutter * (numColumns + 1)) / numColumns
-	local height = (frame.h - gutter * (numRows + 1)) / numRows
+	local width = (frame.w - gutter * (numColumns - 1)) / numColumns
+	local height = (frame.h - gutter * (numRows - 1)) / numRows
 	return width, height
 end
 
@@ -13,7 +13,7 @@ local function createFrame(x, y, w, h)
 end
 
 local function createFullscreenFrame(frame)
-	return createFrame(frame.x + gutter, frame.y, frame.w - (gutter * 2), frame.h - gutter)
+	return createFrame(frame.x, frame.y, frame.w, frame.h)
 end
 
 local function areWindowsInLayout(windows, checkFn)
@@ -45,7 +45,7 @@ local function horizontalBalance(windows)
 	else
 		for index, window in ipairs(windows) do
 			local col = (index - 1) % numColumns
-			local x = frame.x + gutter + (col * (width + gutter))
+			local x = frame.x + (col * (width + gutter))
 
 			window:setFrame(createFrame(x, frame.y, width, height))
 		end
@@ -62,7 +62,7 @@ local function verticalBalance(windows)
 
 	for index, window in ipairs(windows) do
 		local row = (index - 1) % numRows
-		window:setFrame(createFrame(frame.x + gutter, frame.y + gutter + (row * (height + gutter)), width, height))
+		window:setFrame(createFrame(frame.x, frame.y + (row * (height + gutter)), width, height))
 	end
 end
 
@@ -168,7 +168,7 @@ M.leftHalf = function()
 
 	local width, height = getFrameDimensions(frame, 2, 1)
 
-	win:setFrame(createFrame(frame.x + gutter, frame.y, width, height))
+	win:setFrame(createFrame(frame.x, frame.y, width, height))
 end
 
 M.rightHalf = function()
@@ -178,7 +178,7 @@ M.rightHalf = function()
 
 	local width, height = getFrameDimensions(frame, 2, 1)
 
-	win:setFrame(createFrame(frame.x + width + (gutter * 2), frame.y, width, height))
+	win:setFrame(createFrame(frame.x + width + gutter, frame.y, width, height))
 end
 
 M.fillScreen = function()
