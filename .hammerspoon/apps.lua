@@ -2,13 +2,14 @@ local map = require("map")
 local M = {}
 
 local apps = {
-	s = "Slack",
+	a = "All Gravy",
+	s = "Spotify",
+	c = "Slack",
 	t = "Telegram",
 	d = "Docker Desktop",
 	f = "Finder",
-	m = "Mail",
+	m = "Spark Desktop",
 	p = "1Password",
-	h = "Spotify",
 }
 
 for key, app in pairs(apps) do
@@ -22,8 +23,13 @@ for key, app in pairs(apps) do
 	end)
 end
 
+-- Track the current workspace/space
+local currentSpace = nil
+
 M.hideAppOnDeactivate = function(appName, eventType, appObject)
 	if eventType == hs.application.watcher.activated then
+		currentSpace = hs.spaces.focusedSpace()
+
 		for _, app in pairs(apps) do
 			if appName == app then
 				local runningApp = hs.application(appName)
@@ -31,6 +37,10 @@ M.hideAppOnDeactivate = function(appName, eventType, appObject)
 				local window = runningApp:mainWindow()
 				local width = math.max(frame.w / 2, 1500)
 				local height = math.max(frame.h / 2, 1000)
+				if appName == "Finder" then
+					width = 1000
+					height = 700
+				end
 				window:setFrame({
 					w = width,
 					h = height,
@@ -40,12 +50,18 @@ M.hideAppOnDeactivate = function(appName, eventType, appObject)
 			end
 		end
 	elseif eventType == hs.application.watcher.deactivated then
-		for _, app in pairs(apps) do
-			if appName == app then
-				appObject:hide()
-				break
+		local newSpace = hs.spaces.focusedSpace()
+
+		if currentSpace == newSpace then
+			for _, app in pairs(apps) do
+				if appName == app then
+					appObject:hide()
+					break
+				end
 			end
 		end
+
+		currentSpace = newSpace
 	end
 end
 

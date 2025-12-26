@@ -2,6 +2,114 @@ local M = {}
 local filledWindows = {}
 local gutter = 8
 
+-- Define app lists for each space by index (1, 2, 3, etc.)
+-- Configure which apps to cycle through on each space
+local spaceAppLists = {
+	{ "Arc", "Ghostty" },
+	{ "MongoDB Compass", "Table Plus", "Linear" },
+	{ "Postman" },
+}
+
+-- Default app list if no specific list is configured for a space
+local defaultAppList = {
+	"All Gravy",
+	"Spotify",
+	"Slack",
+	"Telegram",
+	"Finder",
+	"Spark Desktop",
+	"1Password",
+	"Docker Desktop",
+}
+
+-- Track the current index for each space
+local currentAppIndex = {}
+
+-- Helper function to get space index from space ID
+local function getSpaceIndex(spaceId)
+	local allSpaces = hs.spaces.allSpaces()
+	local screens = hs.screen.allScreens()
+
+	-- Iterate through screens and their spaces
+	for _, screen in ipairs(screens) do
+		local uuid = screen:getUUID()
+		local spaces = allSpaces[uuid]
+		if spaces then
+			for index, id in ipairs(spaces) do
+				if id == spaceId then
+					return index
+				end
+			end
+		end
+	end
+
+	return 1 -- Default to space 1 if not found
+end
+
+local function getAppListForSpace(spaceIndex)
+	return spaceAppLists[spaceIndex] or defaultAppList
+end
+
+local function getCurrentAppIndex(spaceIndex)
+	return currentAppIndex[spaceIndex] or 1
+end
+
+local function setCurrentAppIndex(spaceIndex, index)
+	currentAppIndex[spaceIndex] = index
+end
+
+-- Cycle through apps in the configured list for the current space
+M.cycleAppsInSpace = function(forward)
+	local spaceId = hs.spaces.focusedSpace()
+	local spaceIndex = getSpaceIndex(spaceId)
+	local appList = getAppListForSpace(spaceIndex)
+
+	if #appList == 0 then
+		return
+	end
+
+	local currentIndex = getCurrentAppIndex(spaceIndex)
+	local startIndex = currentIndex
+	local nextIndex = currentIndex
+	local attempts = 0
+	local maxAttempts = #appList
+
+	-- Keep cycling until we find a running app or we've checked all apps
+	repeat
+		if forward then
+			nextIndex = nextIndex + 1
+			if nextIndex > #appList then
+				nextIndex = 1
+			end
+		else
+			nextIndex = nextIndex - 1
+			if nextIndex < 1 then
+				nextIndex = #appList
+			end
+		end
+
+		local appName = appList[nextIndex]
+		local runningApp = hs.application.get(appName)
+
+		-- If app is running, focus it and update index
+		if runningApp then
+			runningApp:activate()
+			setCurrentAppIndex(spaceIndex, nextIndex)
+			return
+		end
+
+		attempts = attempts + 1
+	until attempts >= maxAttempts
+
+	-- If no running apps found, show notification
+	hs.notify
+		.new({
+			title = "App Cycling",
+			informativeText = "No apps from the list are currently running",
+		})
+		:send()
+end
+
 local function getFrameDimensions(frame, numColumns, numRows)
 	local width = (frame.w - gutter * (numColumns - 1)) / numColumns
 	local height = (frame.h - gutter * (numRows - 1)) / numRows
