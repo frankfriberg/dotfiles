@@ -1,12 +1,11 @@
-theme = dark:rose-pine-moon,light:rose-pine-dawn
+theme = dark:Rose Pine Moon,light:Rose Pine Dawn
+shell-integration = zsh
 
 window-padding-x = 10
 window-padding-y = 5, 5
 macos-titlebar-style = hidden
 confirm-close-surface = false
 mouse-hide-while-typing = true
-
-adjust-cursor-thickness = 50%
 
 font-family = JetBrains Mono
 font-family = Symbols Nerd Font Mono
@@ -16,7 +15,9 @@ font-size = 14
 
 window-save-state=always
 
+adjust-cursor-thickness = 50%
 adjust-cell-width = -1
+adjust-icon-height = -35%
 
 keybind = clear
 keybind = cmd+1=text:\x01\x31
