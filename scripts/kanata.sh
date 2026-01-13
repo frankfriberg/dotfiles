@@ -72,7 +72,7 @@ EOF
 <plist version="1.0"><dict>
   <key>Label</key><string>com.example.karabiner-vhidmanager</string>
   <key>ProgramArguments</key><array>
-    <string>/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager</string>
+    <string>/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager</string>
     <string>activate</string>
   </array>
   <key>RunAtLoad</key><true/>
@@ -84,15 +84,20 @@ EOF
 
   # 4. Bootstrap and enable services
   echo "Setting up kanata daemon"
+  # Unload if already exists
+  sudo launchctl bootout system/com.example.kanata 2>/dev/null || true
   sudo launchctl bootstrap system "${PLIST_DIR}/com.example.kanata.plist"
-  sudo launchctl enable system/com.example.kanata.plist
+  sudo launchctl enable system/com.example.kanata
 
   echo "Setting up karabiner daemons"
+  # Unload if already exists
+  sudo launchctl bootout system/com.example.karabiner-vhiddaemon 2>/dev/null || true
   sudo launchctl bootstrap system "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist"
-  sudo launchctl enable system/com.example.karabiner-vhiddaemon.plist
+  sudo launchctl enable system/com.example.karabiner-vhiddaemon
 
+  sudo launchctl bootout system/com.example.karabiner-vhidmanager 2>/dev/null || true
   sudo launchctl bootstrap system "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist"
-  sudo launchctl enable system/com.example.karabiner-vhidmanager.plist
+  sudo launchctl enable system/com.example.karabiner-vhidmanager
 
   # 5. Prompt for permissions
   echo -e "${ARROW} You'll now allow Karabiner to use a system extension."
@@ -124,3 +129,5 @@ EOF
 
   echo "Kanata and Karabiner services are now installed and enabled."
 }
+
+setup_kanata
