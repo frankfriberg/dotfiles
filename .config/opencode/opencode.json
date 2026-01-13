@@ -3,34 +3,11 @@
   "theme": "system",
   "autoupdate": true,
   "mcp": {
-    "github": {
-      "enabled": true,
+    "fetch": {
       "type": "local",
       "command": [
-        "docker",
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "GITHUB_PERSONAL_ACCESS_TOKEN",
-        "ghcr.io/github/github-mcp-server"
-      ],
-      "environment": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_TOKEN}"
-      }
-    },
-    "context7": {
-      "type": "remote",
-      "url": "https://mcp.context7.com/mcp",
-      "enabled": true
-    },
-    "anyquery": {
-      "enabled": true,
-      "type": "local",
-      "command": [
-        "anyquery",
-        "mcp",
-        "--stdio"
+        "/opt/homebrew/bin/uvx",
+        "mcp-server-fetch"
       ]
     },
     "serena": {
@@ -41,6 +18,11 @@
         "git+https://github.com/oraios/serena",
         "serena-mcp-server"
       ]
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
     }
   }
 }
