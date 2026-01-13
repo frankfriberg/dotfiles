@@ -23,13 +23,8 @@ for key, app in pairs(apps) do
 	end)
 end
 
--- Track the current workspace/space
-local currentSpace = nil
-
-M.hideAppOnDeactivate = function(appName, eventType, appObject)
+M.resizeAppOnFocus = function(appName, eventType)
 	if eventType == hs.application.watcher.activated then
-		currentSpace = hs.spaces.focusedSpace()
-
 		for _, app in pairs(apps) do
 			if appName == app then
 				local runningApp = hs.application(appName)
@@ -49,19 +44,6 @@ M.hideAppOnDeactivate = function(appName, eventType, appObject)
 				})
 			end
 		end
-	elseif eventType == hs.application.watcher.deactivated then
-		local newSpace = hs.spaces.focusedSpace()
-
-		if currentSpace == newSpace then
-			for _, app in pairs(apps) do
-				if appName == app then
-					appObject:hide()
-					break
-				end
-			end
-		end
-
-		currentSpace = newSpace
 	end
 end
 

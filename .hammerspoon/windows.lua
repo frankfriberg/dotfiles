@@ -240,33 +240,68 @@ local function isPipWindow(win)
 end
 
 M.cycleAllWindowsInSpace = function(forward)
-	local windows = hs.window.visibleWindows()
-	local normalWindows = {}
-	for _, win in ipairs(windows) do
-		if not isPipWindow(win) then
-			table.insert(normalWindows, win)
+	local currentSpace = hs.spaces.focusedSpace()
+	local currentWindow = hs.window.focusedWindow()
+	
+	-- If no window is focused, just focus the first available window
+	if not currentWindow then
+		local firstWin = hs.window.frontmostWindow()
+		if firstWin then
+			firstWin:focus()
+		end
+		return
+	end
+	
+	-- Get all windows and filter by current space
+	local allWindows = hs.window.allWindows()
+	local spaceWindows = {}
+	
+	for _, win in ipairs(allWindows) do
+		if win:isVisible() and win:isStandard() and not isPipWindow(win) then
+			local winSpaces = hs.spaces.windowSpaces(win)
+			if winSpaces then
+				for _, spaceId in ipairs(winSpaces) do
+					if spaceId == currentSpace then
+						table.insert(spaceWindows, win)
+						break
+					end
+				end
+			end
 		end
 	end
 
-	local currentWindow = hs.window.focusedWindow()
-	local currentIndex = 1
+	if #spaceWindows <= 1 then
+		return
+	end
 
-	for i, win in ipairs(normalWindows) do
-		if win == currentWindow then
+	-- Sort by window ID for consistent ordering
+	table.sort(spaceWindows, function(a, b)
+		return a:id() < b:id()
+	end)
+
+	local currentIndex = 1
+	for i, win in ipairs(spaceWindows) do
+		if win:id() == currentWindow:id() then
 			currentIndex = i
 			break
 		end
 	end
 
-	local nextIndex = forward and currentIndex + 1 or currentIndex - 1
-	if nextIndex > #normalWindows then
-		nextIndex = 1
-	end
-	if nextIndex < 1 then
-		nextIndex = #normalWindows
+	-- Calculate next index
+	local nextIndex
+	if forward then
+		nextIndex = currentIndex + 1
+		if nextIndex > #spaceWindows then
+			nextIndex = 1
+		end
+	else
+		nextIndex = currentIndex - 1
+		if nextIndex < 1 then
+			nextIndex = #spaceWindows
+		end
 	end
 
-	normalWindows[nextIndex]:focus()
+	spaceWindows[nextIndex]:focus()
 end
 
 M.leftHalf = function()
