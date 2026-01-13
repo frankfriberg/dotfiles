@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 # Parent directories to scan for subfolders
 PARENT_DIRS=(
     "$HOME/projects"
@@ -112,7 +110,8 @@ selected=$(echo "$project_options" | fzf \
     --prompt="> " \
     --with-nth=1 \
     --delimiter=$'\t' \
-    --color=border:white,gutter:-1,label:-1,bg+:0,info:gray,pointer:blue,label:blue \
+    --color=border:white,label:-1,bg+:0,info:gray,pointer:blue,label:blue \
+    --gutter ' ' \
     --border \
     --bind 'ctrl-d:execute(tmux kill-session -t {5})+reload('"$0"' --generate-options)' \
     --reverse)
