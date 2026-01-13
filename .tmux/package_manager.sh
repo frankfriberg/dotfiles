@@ -1,232 +1,188 @@
 #!/usr/bin/env bash
 
-detect_package_manager() {
-  local pm_info=()
-  local default_pm="npm"
+check_dependencies() {
+  local missing=()
+  command -v ni >/dev/null 2>&1 || missing+=("ni (brew install ni / npm i -g @antfu/ni)")
+  command -v jq >/dev/null 2>&1 || missing+=("jq")
+  command -v fzf >/dev/null 2>&1 || missing+=("fzf")
 
-  # Check for lock files
-  if [[ -f "bun.lockb" ]]; then
-    pm_info=("bun" "Bun" "bun.lockb")
-  elif [[ -f "pnpm-lock.yaml" ]]; then
-    pm_info=("pnpm" "PNPM" "pnpm-lock.yaml")
-  elif [[ -f "yarn.lock" ]]; then
-    pm_info=("yarn" "Yarn" "yarn.lock")
-  elif [[ -f "package-lock.json" ]]; then
-    pm_info=("npm" "NPM" "package-lock.json")
-  else
-    # No lock file found, check for available executables
-    if command -v bun >/dev/null 2>&1; then
-      pm_info=("bun" "Bun" "")
-    elif command -v pnpm >/dev/null 2>&1; then
-      pm_info=("pnpm" "PNPM" "")
-    elif command -v yarn >/dev/null 2>&1; then
-      pm_info=("yarn" "Yarn" "")
-    else
-      pm_info=("$default_pm" "NPM" "")
-    fi
+  if [[ ${#missing[@]} -gt 0 ]]; then
+    tmux display-message "Missing: ${missing[*]}"
+    return 1
   fi
 
-  echo "${pm_info[0]} ${pm_info[1]}"
+  if [[ ! -f "package.json" ]]; then
+    tmux display-message "No package.json found"
+    return 1
+  fi
+
+  return 0
 }
 
-is_pane_running_command() {
-  local pane_id=$1
-  local pane_pid=$(tmux display-message -p -t "$pane_id" "#{pane_pid}")
-  local pane_children=$(pgrep -P "$pane_pid" | wc -l)
-
-  [ "$pane_children" -gt 0 ]
+is_pane_busy() {
+  local pane_pid=$(tmux display-message -p "#{pane_pid}")
+  [[ $(pgrep -P "$pane_pid" | wc -l) -gt 0 ]]
 }
 
 search_packages() {
-  local pm_cmd="$1"
-  local pm_name="$2"
-  local query="$3"
-
-  if [[ -z "$query" ]]; then
-    return
-  fi
-
-  case "$pm_cmd" in
-  npm)
-    npm search --json "$query" 2>/dev/null | jq -r '.[] | "\(.name) => \(.description)"' 3>/dev/null
-    ;;
-  yarn)
-    # yarn doesn't have a good search command in newer versions, fall back to npm search
-    npm search --json "$query" 2>/dev/null | jq -r '.[] | "\(.name) => \(.description)"' 3>/dev/null
-    ;;
-  pnpm)
-    # pnpm search output isn't JSON by default, so we format it
-    pnpm search "$query" 2>/dev/null | tail -n +2 | awk '{name=$1; $1=""; desc=$0; gsub(/^ /, "", desc); print name " => " desc}' 3>/dev/null
-    ;;
-  bun)
-    # bun search output needs formatting
-    bun pm search "$query" 2>/dev/null | grep -v "^Searching" | awk '{name=$1; $1=""; desc=$0; gsub(/^ /, "", desc); print name " => " desc}' 3>/dev/null
-    ;;
-  esac
+  local query="$1"
+  [[ -z "$query" ]] && return
+  npm search --json "$query" 2>/dev/null | jq -r '.[] | "\(.name) => \(.description)"' 2>/dev/null || true
 }
 
 select_packages() {
-  local pm_cmd="$1"
-  local pm_display="$2"
-  local temp_file=$(mktemp)
-  local selected_packages
-
   export -f search_packages
-  export PM_CMD="$pm_cmd"
-  export PM_DISPLAY="$pm_display"
-
-  local packages=$(
-    fzf --tmux --multi --reverse --border-label=" Install ${pm_display} Packages " \
-      --color=border:blue,gutter:-1,label:-1,bg+:0,info:gray,pointer:blue,label:blue \
-      --prompt "Search ${pm_cmd}: " \
-      --header 'Enter search term, select multiple packages with TAB' \
-      --query '' \
-      --delimiter ' => ' \
-      --with-nth 1.. \
-      --bind "change:reload:sleep 0.1; search_packages $PM_CMD $PM_DISPLAY {q}" \
-      --track
-  )
-
-  if [[ -n "$packages" ]]; then
-    echo "$packages" | sed 's/ => .*//'
-  fi
+  fzf --tmux --multi --reverse --border-label=" Install Packages " \
+    --color=border:blue,label:blue,bg+:0,info:gray,pointer:blue \
+    --prompt "Search: " \
+    --header 'Type to search, TAB to select multiple, ENTER to install' \
+    --delimiter ' => ' --with-nth 1.. \
+    --bind "change:reload:sleep 0.1; search_packages {q}" \
+    --track | sed 's/ => .*//' | tr '\n' ' ' | sed 's/[[:space:]]*$//'
 }
 
-execute_package_command() {
-  local command="$1"
-  local script_name="$2"
-  local display_mode="$3"
-  local current_pane="$4"
-  local pm_display="$5"
+execute_command() {
+  local cmd="$1" title="$2" mode="$3" pane="$4"
+  local cwd=$(tmux display-message -p -F "#{pane_current_path}")
 
-  local wrapped_command='
-    command_to_run="$1";
-    title="$2";
-
-    # Run the command and capture both output and exit code
-    echo "$ $command_to_run";
-    eval "$command_to_run";
-    cmd_exit=$?;
-
-    # Show status with color, but always treat as "success" for tmux
-    if [ $cmd_exit -eq 0 ]; then
-      echo -e "\n\033[1;32mCommand completed successfully ✓\033[0m";
-    else
-      echo -e "\n\033[1;31mCommand failed with exit code: $cmd_exit ✗\033[0m";
-    fi;
-
-    # Always wait for user input regardless of exit code
-    echo -e "\n\033[1;33mPress any key to close...\033[0m";
-    read -n 1 -s dummy_var || true;
-    exit 0;  # Always exit with success to keep window/popup open
+  local wrapper='
+    output_file=$(mktemp)
+    
+    # Force color output for common package managers
+    export FORCE_COLOR=1
+    export NPM_CONFIG_COLOR=always
+    
+    # Run command with fnm setup
+    {
+      if command -v fnm >/dev/null 2>&1; then
+        fnm use --silent-if-unchanged 2>/dev/null || true
+      fi
+      echo -e "\033[1;34m$ '"$cmd"'\033[0m"
+      '"$cmd"'
+    } 2>&1 | tee "$output_file"
+    code=${PIPESTATUS[0]}
+    
+    {
+      echo
+      if [[ $code -eq 0 ]]; then
+        echo -e "\033[1;32m✓ Success\033[0m"
+      else
+        echo -e "\033[1;31m✗ Failed (exit: $code)\033[0m"
+      fi
+      echo
+      echo -e "\033[1;36mScroll with j and k | Page scroll with C-u and C-d | Press q to close\033[0m"
+    } | tee -a "$output_file"
+    
+    less -R -K +G "$output_file"
+    rm -f "$output_file"
   '
 
-  local title="${pm_display}:$script_name"
-
-  case "$display_mode" in
-  "popup")
-    tmux display-popup -E -h 80% -w 80% -T "$pm_display" "bash -c '$wrapped_command' _ '$command' '$title'"
+  case "$mode" in
+  popup)
+    tmux display-popup -E -h 80% -w 80% -T "$title" -d '#{pane_current_path}' "bash -c '$wrapper'"
     ;;
-  "window")
-    if is_pane_running_command "$current_pane"; then
-      tmux new-window -n "$title" "bash -c '$wrapped_command' _ '$command' '$title'"
+  window)
+    if is_pane_busy; then
+      tmux new-window -n "$title" -c '#{pane_current_path}' "bash -c '$wrapper'"
     else
-      tmux rename-pane "$title"
-      tmux send-keys -t "$current_pane" C-u "$command" C-m
+      tmux send-keys -t "$pane" C-u "$cmd" C-m
     fi
     ;;
   esac
 }
 
-run_package_scripts() {
-  local pm_info=($(detect_package_manager))
-  local pm_cmd="${pm_info[0]}"
-  local pm_display="${pm_info[1]}"
-
-  if [[ ! -f "package.json" ]]; then
-    tmux display-message "No package.json found in the current directory for the detected package manager"
-    return 0
+build_menu() {
+  local scripts
+  if ! scripts=$(jq -r '.scripts | to_entries | map("\(.key)|\(.value)") | .[]' package.json 2>/dev/null); then
+    scripts=""
   fi
 
-  if ! command -v jq >/dev/null 2>&1; then
-    tmux display-message "jq is required but not installed to parse scripts for the detected package manager"
-    return 0
-  fi
-
-  local scripts=$(jq -r '.scripts | to_entries | map("\(.key)|\(.value)") | .[]' package.json)
-
-  if [[ -z "$scripts" ]]; then
-    tmux display-message "No scripts found in the package.json for the detected package manager"
-    return 0
-  fi
-
-  local scriptstorun="install|Install ${pm_display} dependencies"$'\n'"install-package|Install ${pm_display} package"$'\n'"$scripts"
-  local current_pane=$(tmux display-message -p "#{pane_id}")
-
-  local display_mode
-  if is_pane_running_command "$current_pane"; then
-    display_mode="popup"
-  else
-    display_mode="window"
-  fi
-
-  while true; do
-    local result=$(echo "$scriptstorun" | sed 's/|/ => /g' | fzf --tmux --reverse \
-      --border-label=" ${pm_display} Scripts ($(if [[ "$display_mode" == "popup" ]]; then echo -e "\033[33mpopup\033[0m"; else echo -e "\033[36mwindow\033[0m"; fi)) " \
-      --color=border:blue,gutter:-1,label:-1,bg+:0,info:gray,pointer:blue,label:blue \
-      --header "<C-p>: Change display mode | <esc>: Cancel" \
-      --expect="ctrl-p,esc")
-
-    local key=$(echo "$result" | head -1)
-    local selection=$(echo "$result" | tail -n +2)
-
-    if [[ -z "$key" && -n "$selection" ]]; then
-      break
-    fi
-
-    case "$key" in
-    "ctrl-p")
-      # Toggle between popup and window modes
-      if [[ "$display_mode" == "popup" ]]; then
-        display_mode="window"
-      else
-        display_mode="popup"
-      fi
-      continue
-      ;;
-    "esc")
-      return 0
-      ;;
-    *)
-      if [[ -n "$selection" ]]; then
-        break
-      fi
-      ;;
-    esac
-  done
-
-  if [[ -n "$selection" ]]; then
-    local script_name=$(echo "$selection" | sed 's/ => .*//')
-    local command="npm run $script_name"
-
-    if [ "$script_name" == "install" ]; then
-      command="npm $script_name"
-    fi
-
-    if [ "$script_name" == "install-package" ]; then
-      local pm_cmd="${pm_info[0]}"
-      local pm_display="${pm_info[1]}"
-      local packages=$(select_packages "$pm_cmd" "$pm_display")
-
-      if [[ -n "$packages" ]]; then
-        command="$pm_cmd install ${packages}"
-      else
-        return 0
-      fi
-    fi
-
-    execute_package_command "$command" "$script_name" "$display_mode" "$current_pane" "$pm_display"
-  fi
+  cat <<EOF
+install|Install dependencies
+add|Add packages
+add-dev|Add dev dependencies
+${scripts}
+EOF
 }
 
-run_package_scripts
+main() {
+  check_dependencies || return 1
+
+  local current_pane=$(tmux display-message -p "#{pane_id}")
+  local display_mode=$(is_pane_busy && echo "popup" || echo "window")
+
+  local mode_file
+  mode_file=$(mktemp) || {
+    tmux display-message "Failed to create temp file"
+    return 1
+  }
+  echo "$display_mode" >"$mode_file"
+  export MODE_FILE="$mode_file"
+
+  local menu=$(build_menu)
+  local mode_color=$([[ "$display_mode" == "popup" ]] && echo "yellow" || echo "cyan")
+
+  local result
+  result=$(echo "$menu" | sed 's/|/ => /g' | fzf --tmux --reverse \
+    --border-label=" Package Manager ($display_mode) " \
+    --color=border:white,label:$mode_color,bg+:0,info:gray,pointer:blue \
+    --header "C-w: Toggle mode | ESC: Cancel" \
+    --expect="esc" \
+    --bind='ctrl-w:transform:
+      current=$(cat $MODE_FILE)
+      new_mode=$([[ "$current" == "popup" ]] && echo "window" || echo "popup")
+      echo "$new_mode" > $MODE_FILE
+      echo "change-border-label( Package Manager ($new_mode) )"
+    ') || {
+    # fzf was cancelled or failed
+    rm -f "$mode_file"
+    unset MODE_FILE
+    return 0
+  }
+
+  # Get final mode and cleanup
+  if [[ -f "$mode_file" ]]; then
+    display_mode=$(cat "$mode_file" 2>/dev/null || echo "$display_mode")
+    rm -f "$mode_file"
+  fi
+  unset MODE_FILE
+
+  local key=$(echo "$result" | head -1)
+  local selection=$(echo "$result" | tail -n +2)
+
+  [[ "$key" == "esc" || -z "$selection" ]] && return 0
+
+  local script_name=$(echo "$selection" | sed 's/ => .*//')
+  local command title
+
+  case "$script_name" in
+  install)
+    command="ni"
+    title="Install"
+    ;;
+  add)
+    local packages
+    packages=$(select_packages)
+    packages=$(echo "$packages" | xargs) # Trim whitespace
+    [[ -z "$packages" ]] && return 0
+    command="ni $packages"
+    title="Add"
+    ;;
+  add-dev)
+    local packages
+    packages=$(select_packages)
+    packages=$(echo "$packages" | xargs) # Trim whitespace
+    [[ -z "$packages" ]] && return 0
+    command="ni -D $packages"
+    title="Add Dev"
+    ;;
+  *)
+    command="nr $script_name"
+    title="$script_name"
+    ;;
+  esac
+
+  execute_command "$command" "$title" "$display_mode" "$current_pane"
+}
+
+main "$@"
