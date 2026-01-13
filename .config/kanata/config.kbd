@@ -23,7 +23,7 @@
   grv  1    2    3    4    5    6    7    8    9    0    +    ´    bspc
   tab  q    w    e    r    t    y    u    i    o    p    å    ¨
   caps a    s    d    f    g    h    j    k    l    æ    ø    '    ret
-  lsft <    z    x    c    v    b    n    m    ,    .    -    up    rsft
+  lsft lsgt z    x    c    v    b    n    m    ,    .    -    up    rsft
   fn   lctl lalt lmet          spc        rmet ralt left    down    right
 )
 
@@ -78,7 +78,6 @@
   k (t! thrk-r k rctl)
   l (t! thrk-r l rsft)
   ae (t! thrk-r æ lmet)
-  dollar (unicode "$")
   arrow (unicode "^")
   escnav (tap-hold 100 200 esc (layer-while-held navigation))
   nav (layer-while-held navigation)
@@ -91,24 +90,24 @@
   lsgt    1     2     3     4     5     6     7     8     9     0     +     ´     bspc
   @tab    q     w     e     r     t     y     u     i     o     p     å     ¨
   @escnav @a    @s    @d    @f    g     h     @j    @k    @l    @ae   ø     '     @retsym
-  lsft    <     z     x     c     v     b     n     m     ,     .     -     up    rsft
-  fn      lctl  lalt  lmet             @spcsym            @nav  @meh  left  down  right
+  lsft    grv   z     x     c     v     b     n     m     ,     .     -     up    rsft
+  A-spc   lctl  lalt  lmet             @spcsym            @nav  @meh  left  down  right
 )
 
 (deflayer navigation
   esc     brdn  brup  _     _     _     _     prev  pp    next  mute  vold  volu
-  @dollar 1     2     3     4     5     6     7     8     9     0     +     ´     bspc
+  grv   1     2     3     4     5     6     7     8     9     0     +     ´     bspc
   @tab    q     w     e     r     t     y     u     i     o     p     å     ¨
   @escnav a     s     d     f     g     left  down  up    right æ     ø     '     ret
   lsft    <     z     x     c     v     b     n     m     ,     .     -     up    rsft
-  fn      lctl  lalt  lmet                spc             ralt  @meh  left  down  right
+  A-spc   lctl  lalt  lmet                spc             ralt  @meh  left  down  right
 )
 
 (deflayer symbol
   esc     brdn  brup  _     _     _     prev  pp     next    mute  vold  volu  _
-  @arrow  1     RA-'  3     4     5     prev  pp     next    mute  vold  _     ´     volu
+  @arrow  brdn  brup  RA-'  4     5     prev  pp     next    mute  vold  _      ´   volu
   lrld    S-1   S-2   S-3   S-4   S-5   S-6   S-7    S-8     S-9   S-0   S-+   S-´ 
-  lctl    +     S-0   S-'   '     RA-'  RA-¨  RA-S-8 RA-S-9  RA-8  RA-9  S-´   S-'   fn
-  lsft    <     z     x     c     v     b     grv    S-grv   ,     .     -     up    rsft
-  fn      lctl  lalt  lmet                fn                 rmet  ralt  left  down  right
+  lctl    +     S-0   S-'   '     RA-'  RA-¨  RA-S-8 RA-S-9  RA-8  RA-9  S-´   S-'  A-spc 
+  lsft    <     z     x     c     v     b     <      S-<     ,     .     -     up   rsft
+  A-spc   lctl  lalt  lmet              A-spc              rmet  ralt  left  down   right
 )
