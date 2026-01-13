@@ -64,4 +64,17 @@
 	showUntrackedFiles = all
 
 [user]
+	name = Frank Friberg
 	email = frankfriberg@users.noreply.github.com 
+
+[includeIf "gitdir:~/projects/allgravy/"]
+    path = ~/projects/allgravy/.gitconfig
+
+[credential "https://github.com"]
+	helper = !/opt/homebrew/bin/gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper = !/opt/homebrew/bin/gh auth git-credential
+
+[credential]
+	useHttpPath = true
