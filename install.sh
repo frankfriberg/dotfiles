@@ -16,17 +16,20 @@ if ! command -v brew &>/dev/null; then
 	fi
 fi
 
+brew bundle
+
+# Source utility scripts first
 . scripts/utils.sh
 . scripts/osx.sh
 . scripts/kanata.sh
+. scripts/dock.sh
 
 if [ ! -d ~/projects ]; then
 	mkdir ~/projects
 fi
 
-brew bundle
-
 stow .
 
 setup_osx
+setup_dock
 setup_kanata
