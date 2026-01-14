@@ -4,34 +4,48 @@
 set -euo pipefail
 
 setup_kanata() {
-  # Color variables
-  MAGENTA='\033[35m'
-  RESET='\033[0m'
-  ARROW="${MAGENTA}==>${RESET}"
+	# Color variables
+	MAGENTA='\033[35m'
+	GREEN='\033[32m'
+	RESET='\033[0m'
+	ARROW="${MAGENTA}==>${RESET}"
 
-  KANATA_CONFIG="${HOME}/.config/kanata/config.kbd"
-  KANATA_PORT=10000
-  PLIST_DIR="/Library/LaunchDaemons"
+	KANATA_CONFIG="${HOME}/.config/kanata/config.kbd"
+	KANATA_PORT=10000
+	PLIST_DIR="/Library/LaunchDaemons"
 
-  # 1. Fetch & install latest Karabiner DriverKit pkg
-  echo "Fetching latest Karabiner DriverKit pkg URL..."
-  DRIVERKIT_PKG_URL=$(
-    curl -s "https://api.github.com/repos/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice/releases/latest" |
-      jq -r '.assets[] | select(.name|endswith(".pkg")) | .browser_download_url'
-  )
-  echo "Downloading DriverKit from: $DRIVERKIT_PKG_URL"
-  curl -L -o /tmp/karabiner-driverkit.pkg "$DRIVERKIT_PKG_URL"
-  echo "Installing DriverKit..."
-  sudo installer -pkg /tmp/karabiner-driverkit.pkg -target /
-  rm -f /tmp/karabiner-driverkit.pkg
+	# Check if Kanata is already set up
+	if [ -f "${PLIST_DIR}/com.example.kanata.plist" ] &&
+		[ -f "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist" ] &&
+		[ -f "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist" ] &&
+		sudo launchctl print system/com.example.kanata &>/dev/null; then
+		echo -e "${GREEN}✓${RESET} Kanata is already set up and running. Skipping setup."
+		return 0
+	fi
 
-  # 2. Install Kanata via Homebrew if not present
-  brew list kanata >/dev/null 2>&1 || brew install kanata
+	# 1. Fetch & install latest Karabiner DriverKit pkg
+	if [ ! -d "/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice" ]; then
+		echo "Fetching latest Karabiner DriverKit pkg URL..."
+		DRIVERKIT_PKG_URL=$(
+			curl -s "https://api.github.com/repos/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice/releases/latest" |
+				jq -r '.assets[] | select(.name|endswith(".pkg")) | .browser_download_url'
+		)
+		echo "Downloading DriverKit from: $DRIVERKIT_PKG_URL"
+		curl -L -o /tmp/karabiner-driverkit.pkg "$DRIVERKIT_PKG_URL"
+		echo "Installing DriverKit..."
+		sudo installer -pkg /tmp/karabiner-driverkit.pkg -target /
+		rm -f /tmp/karabiner-driverkit.pkg
+	else
+		echo -e "${GREEN}✓${RESET} Karabiner DriverKit already installed. Skipping."
+	fi
 
-  KANATA_BIN=$(command -v kanata)
+	# 2. Install Kanata via Homebrew if not present
+	brew list kanata >/dev/null 2>&1 || brew install kanata
 
-  # 3. Write plist files
-  sudo tee "${PLIST_DIR}/com.example.kanata.plist" >/dev/null <<EOF
+	KANATA_BIN=$(command -v kanata)
+
+	# 3. Write plist files
+	sudo tee "${PLIST_DIR}/com.example.kanata.plist" >/dev/null <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -46,10 +60,10 @@ setup_kanata() {
   <key>KeepAlive</key><true/>
 </dict></plist>
 EOF
-  sudo chown root:wheel "${PLIST_DIR}/com.example.kanata.plist"
-  sudo chmod 644 "${PLIST_DIR}/com.example.kanata.plist"
+	sudo chown root:wheel "${PLIST_DIR}/com.example.kanata.plist"
+	sudo chmod 644 "${PLIST_DIR}/com.example.kanata.plist"
 
-  sudo tee "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist" >/dev/null <<EOF
+	sudo tee "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist" >/dev/null <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -62,10 +76,10 @@ EOF
   <key>KeepAlive</key><true/>
 </dict></plist>
 EOF
-  sudo chown root:wheel "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist"
-  sudo chmod 644 "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist"
+	sudo chown root:wheel "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist"
+	sudo chmod 644 "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist"
 
-  sudo tee "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist" >/dev/null <<EOF
+	sudo tee "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist" >/dev/null <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -79,55 +93,55 @@ EOF
 </dict></plist>
 EOF
 
-  sudo chown root:wheel "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist"
-  sudo chmod 644 "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist"
+	sudo chown root:wheel "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist"
+	sudo chmod 644 "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist"
 
-  # 4. Bootstrap and enable services
-  echo "Setting up kanata daemon"
-  # Unload if already exists
-  sudo launchctl bootout system/com.example.kanata 2>/dev/null || true
-  sudo launchctl bootstrap system "${PLIST_DIR}/com.example.kanata.plist"
-  sudo launchctl enable system/com.example.kanata
+	# 4. Bootstrap and enable services
+	echo "Setting up kanata daemon"
+	# Unload if already exists
+	sudo launchctl bootout system/com.example.kanata 2>/dev/null || true
+	sudo launchctl bootstrap system "${PLIST_DIR}/com.example.kanata.plist"
+	sudo launchctl enable system/com.example.kanata
 
-  echo "Setting up karabiner daemons"
-  # Unload if already exists
-  sudo launchctl bootout system/com.example.karabiner-vhiddaemon 2>/dev/null || true
-  sudo launchctl bootstrap system "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist"
-  sudo launchctl enable system/com.example.karabiner-vhiddaemon
+	echo "Setting up karabiner daemons"
+	# Unload if already exists
+	sudo launchctl bootout system/com.example.karabiner-vhiddaemon 2>/dev/null || true
+	sudo launchctl bootstrap system "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist"
+	sudo launchctl enable system/com.example.karabiner-vhiddaemon
 
-  sudo launchctl bootout system/com.example.karabiner-vhidmanager 2>/dev/null || true
-  sudo launchctl bootstrap system "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist"
-  sudo launchctl enable system/com.example.karabiner-vhidmanager
+	sudo launchctl bootout system/com.example.karabiner-vhidmanager 2>/dev/null || true
+	sudo launchctl bootstrap system "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist"
+	sudo launchctl enable system/com.example.karabiner-vhidmanager
 
-  # 5. Prompt for permissions
-  echo -e "${ARROW} You'll now allow Karabiner to use a system extension."
-  echo -e "On the next screen, approve the extension when prompted."
-  read -rp "Press Enter to open System Extensions..."
-  open "x-apple.systempreferences:com.apple.LoginItems-Settings.extension"
-  echo
-  read -rp "Press Enter once you're done..."
-  echo
+	# 5. Prompt for permissions
+	echo -e "${ARROW} You'll now allow Karabiner to use a system extension."
+	echo -e "On the next screen, approve the extension when prompted."
+	read -rp "Press Enter to open System Extensions..."
+	open "x-apple.systempreferences:com.apple.LoginItems-Settings.extension"
+	echo
+	read -rp "Press Enter once you're done..."
+	echo
 
-  echo -e "${ARROW} You'll now add Kanata to Accessibility settings."
-  echo -e "On the next screen:"
-  echo -e "- Click '+' to add a new item"
-  echo -e "- Press Shift+Command+G and enter ${MAGENTA}/opt/homebrew/bin${RESET}"
-  echo -e "- Select the Kanata binary"
-  read -rp "Press Enter to open Accessibility settings..."
-  open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
-  echo
-  read -rp "Press Enter once you're done..."
-  echo
+	echo -e "${ARROW} You'll now add Kanata to Accessibility settings."
+	echo -e "On the next screen:"
+	echo -e "- Click '+' to add a new item"
+	echo -e "- Press Shift+Command+G and enter ${MAGENTA}/opt/homebrew/bin${RESET}"
+	echo -e "- Select the Kanata binary"
+	read -rp "Press Enter to open Accessibility settings..."
+	open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+	echo
+	read -rp "Press Enter once you're done..."
+	echo
 
-  echo -e "${ARROW} Now add Kanata to Input Monitoring as well."
-  echo -e "Follow the same steps as before."
-  read -rp "Press Enter to open Input Monitoring settings..."
-  open "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"
-  echo
-  read -rp "Press Enter once you're done..."
-  echo
+	echo -e "${ARROW} Now add Kanata to Input Monitoring as well."
+	echo -e "Follow the same steps as before."
+	read -rp "Press Enter to open Input Monitoring settings..."
+	open "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"
+	echo
+	read -rp "Press Enter once you're done..."
+	echo
 
-  echo "Kanata and Karabiner services are now installed and enabled."
+	echo "Kanata and Karabiner services are now installed and enabled."
 }
 
 setup_kanata
