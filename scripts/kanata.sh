@@ -14,15 +14,6 @@ setup_kanata() {
 	KANATA_PORT=10000
 	PLIST_DIR="/Library/LaunchDaemons"
 
-	# Check if Kanata is already set up
-	if [ -f "${PLIST_DIR}/com.example.kanata.plist" ] &&
-		[ -f "${PLIST_DIR}/com.example.karabiner-vhiddaemon.plist" ] &&
-		[ -f "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist" ] &&
-		sudo launchctl print system/com.example.kanata &>/dev/null; then
-		echo -e "${GREEN}✓${RESET} Kanata is already set up and running. Skipping setup."
-		return 0
-	fi
-
 	# 1. Fetch & install latest Karabiner DriverKit pkg
 	if [ ! -d "/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice" ]; then
 		echo "Fetching latest Karabiner DriverKit pkg URL..."
@@ -86,7 +77,7 @@ EOF
 <plist version="1.0"><dict>
   <key>Label</key><string>com.example.karabiner-vhidmanager</string>
   <key>ProgramArguments</key><array>
-    <string>/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager</string>
+    <string>/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager</string>
     <string>activate</string>
   </array>
   <key>RunAtLoad</key><true/>
@@ -113,35 +104,38 @@ EOF
 	sudo launchctl bootstrap system "${PLIST_DIR}/com.example.karabiner-vhidmanager.plist"
 	sudo launchctl enable system/com.example.karabiner-vhidmanager
 
-	# 5. Prompt for permissions
-	echo -e "${ARROW} You'll now allow Karabiner to use a system extension."
-	echo -e "On the next screen, approve the extension when prompted."
+	# 5. Activate system extension and prompt for permissions
+	echo -e "${ARROW} Activating Karabiner system extension..."
+	"/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager" activate &
+	sleep 2
+
+	echo -e "${ARROW} Opening System Settings to approve the Karabiner driver extension."
+	echo -e "Please approve the ${MAGENTA}Karabiner-DriverKit-VirtualHIDDevice${RESET} extension."
 	read -rp "Press Enter to open System Extensions..."
-	open "x-apple.systempreferences:com.apple.LoginItems-Settings.extension"
+	open "x-apple.systempreferences:com.apple.Settings.Extensions"
 	echo
 	read -rp "Press Enter once you're done..."
 	echo
 
-	echo -e "${ARROW} You'll now add Kanata to Accessibility settings."
-	echo -e "On the next screen:"
-	echo -e "- Click '+' to add a new item"
-	echo -e "- Press Shift+Command+G and enter ${MAGENTA}/opt/homebrew/bin${RESET}"
-	echo -e "- Select the Kanata binary"
+	echo -e "${ARROW} Opening Accessibility settings."
+	echo -e "Please add Kanata: Click '+', press Shift+Command+G, enter ${MAGENTA}/opt/homebrew/bin${RESET}, and select kanata."
 	read -rp "Press Enter to open Accessibility settings..."
 	open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
 	echo
 	read -rp "Press Enter once you're done..."
 	echo
 
-	echo -e "${ARROW} Now add Kanata to Input Monitoring as well."
-	echo -e "Follow the same steps as before."
+	echo -e "${ARROW} Opening Input Monitoring settings."
+	echo -e "Please add Kanata using the same steps as Accessibility."
 	read -rp "Press Enter to open Input Monitoring settings..."
 	open "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"
 	echo
 	read -rp "Press Enter once you're done..."
 	echo
 
-	echo "Kanata and Karabiner services are now installed and enabled."
+	echo -e "${GREEN}✓${RESET} Kanata and Karabiner services are now installed and enabled."
+	echo -e "${ARROW} Kanata should now be working. If not, restart it with:"
+	echo -e "  ${MAGENTA}sudo launchctl kickstart -k system/com.example.kanata${RESET}"
 }
 
 setup_kanata
