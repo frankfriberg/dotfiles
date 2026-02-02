@@ -7,7 +7,7 @@ gui:
   showFileTree: false
   theme:
     selectedLineBgColor:
-      - reverse
+      - "#473c28"
 os:
   edit: '[ -z "$NVIM" ] && (nvim -- {{filename}}) || (nvim --server "$NVIM" --remote {{filename}})'
   editAtLine: '[ -z "$NVIM" ] && (nvim +{{line}} -- {{filename}}) || (nvim --server "$NVIM" --remote- {{filename}} && nvim --server "$NVIM" --remote-send ":{{line}}<CR>")'

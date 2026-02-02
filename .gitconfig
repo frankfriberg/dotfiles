@@ -1,36 +1,5 @@
-[delta "rose-pine-moon"]
-	blame-palette = "#232136 #2a273f #393552 #44415a #56526e"
-	commit-decoration-style = "#908caa" bold box ul
-	dark = true
-	file-decoration-style = "#908caa"
-	file-style = "#e0def4"
-	hunk-header-decoration-style = "#908caa" box ul
-	hunk-header-file-style = bold
-	hunk-header-line-number-style = bold "#908caa"
-	hunk-header-style = file line-number syntax
-	line-numbers-left-style = "#6e6a86"
-	line-numbers-minus-style = bold "#eb6f92"
-	line-numbers-plus-style = bold "#a6e3a1"
-	line-numbers-right-style = "#6e6a86"
-	line-numbers-zero-style = "#6e6a86"
-	# 35% red 65% base
-	minus-emph-style = bold syntax "#4a2f3c"
-	# 20% red 80% base
-	minus-style = syntax "#362837"
-	# 35% green 65% base
-	plus-emph-style = bold syntax "#3c4a3c"
-	# 20% green 80% base
-	plus-style = syntax "#303a30"
-	map-styles = \
-		bold purple => syntax "#4d4463", \
-		bold blue => syntax "#364554", \
-		bold cyan => syntax "#3e4b50", \
-		bold yellow => syntax "#524a3f"
-	# Should match the name of the bat theme
-	syntax-theme = rose-pine-moon
-
 [delta]
-	features = rose-pine-moon	
+  syntax-theme = Kanagawa
 
 [core]
 	editor = nvim
