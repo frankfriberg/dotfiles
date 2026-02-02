@@ -242,7 +242,7 @@ end
 M.cycleAllWindowsInSpace = function(forward)
 	local currentSpace = hs.spaces.focusedSpace()
 	local currentWindow = hs.window.focusedWindow()
-	
+
 	-- If no window is focused, just focus the first available window
 	if not currentWindow then
 		local firstWin = hs.window.frontmostWindow()
@@ -251,11 +251,11 @@ M.cycleAllWindowsInSpace = function(forward)
 		end
 		return
 	end
-	
+
 	-- Get all windows and filter by current space
 	local allWindows = hs.window.allWindows()
 	local spaceWindows = {}
-	
+
 	for _, win in ipairs(allWindows) do
 		if win:isVisible() and win:isStandard() and not isPipWindow(win) then
 			local winSpaces = hs.spaces.windowSpaces(win)
@@ -302,26 +302,6 @@ M.cycleAllWindowsInSpace = function(forward)
 	end
 
 	spaceWindows[nextIndex]:focus()
-end
-
-M.leftHalf = function()
-	local win = hs.window.focusedWindow()
-	local screen = win:screen()
-	local frame = screen:frame()
-
-	local width, height = getFrameDimensions(frame, 2, 1)
-
-	win:setFrame(createFrame(frame.x, frame.y, width, height))
-end
-
-M.rightHalf = function()
-	local win = hs.window.focusedWindow()
-	local screen = win:screen()
-	local frame = screen:frame()
-
-	local width, height = getFrameDimensions(frame, 2, 1)
-
-	win:setFrame(createFrame(frame.x + width + gutter, frame.y, width, height))
 end
 
 M.fillScreen = function()

@@ -17,7 +17,6 @@ map.meh("r", function()
 end)
 
 -- Windows
-map.hyper("q", windows.leftHalf)
 map.hyper("w", function()
 	windows.cycleAppsInSpace(true)
 end)
