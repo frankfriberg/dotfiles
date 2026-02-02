@@ -1,13 +1,19 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "theme": "system",
-  "autoupdate": true,
   "mcp": {
     "fetch": {
       "type": "local",
       "command": [
         "/opt/homebrew/bin/uvx",
         "mcp-server-fetch"
+      ]
+    },
+    "browsermcp": {
+      "enabled": false,
+      "type": "local",
+      "command": [
+        "npx",
+        "@browsermcp/mcp@latest"
       ]
     },
     "serena": {
