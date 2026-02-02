@@ -9,3 +9,5 @@ node_modules
 
 .tmux/plugins/*
 !.tmux/plugins/tpm
+
+.serena/
